@@ -11,6 +11,7 @@ const io = socketIO(server, {
     methods: ["GET", "POST"],
   },
 });
+console.log("damng")
 
 const PORT = process.env.PORT || 5000;
 
