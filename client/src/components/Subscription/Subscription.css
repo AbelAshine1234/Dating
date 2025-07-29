@@ -1,0 +1,34 @@
+.sub-wrapper {
+    max-width: 400px;
+    margin: 4rem auto;
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  .sub-wrapper h2 {
+    margin-bottom: 2rem;
+  }
+  
+  .plan-btn {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    border: 2px solid #e60073;
+    background: white;
+    color: #e60073;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .plan-btn:hover {
+    background-color: #e60073;
+    color: white;
+  }
+  

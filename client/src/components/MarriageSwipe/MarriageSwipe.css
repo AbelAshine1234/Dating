@@ -1,0 +1,92 @@
+.marriage-swipe-container {
+    max-width: 420px;
+    margin: 3rem auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 0 1rem;
+  }
+  
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-bottom: 1.5rem;
+    justify-content: center;
+  }
+  
+  .filters select,
+  .filters input {
+    padding: 0.6rem 0.9rem;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 0.95rem;
+    min-width: 110px;
+  }
+  
+  .profile-card {
+    background: #fff;
+    box-shadow: 0 6px 18px rgb(0 0 0 / 0.1);
+    border-radius: 18px;
+    padding: 1.4rem;
+    text-align: center;
+  }
+  
+  .profile-card img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 18px;
+    margin-bottom: 1rem;
+  }
+  
+  .profile-card h3 {
+    margin: 0.5rem 0;
+    font-size: 1.3rem;
+  }
+  
+  .profile-card p {
+    margin: 0.3rem 0;
+    font-size: 0.95rem;
+    color: #555;
+  }
+  
+  .profile-card .bio {
+    font-style: italic;
+    margin-top: 0.6rem;
+    color: #666;
+  }
+  
+  .actions {
+    margin-top: 1.2rem;
+    display: flex;
+    justify-content: space-around;
+  }
+  
+  .pass-btn,
+  .like-btn {
+    font-size: 1.1rem;
+    padding: 0.5rem 1.6rem;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.3s ease;
+  }
+  
+  .pass-btn {
+    background: #eee;
+    color: #444;
+  }
+  
+  .pass-btn:hover {
+    background: #ddd;
+  }
+  
+  .like-btn {
+    background: #e60073;
+    color: white;
+  }
+  
+  .like-btn:hover {
+    background: #c7005c;
+  }
+  
