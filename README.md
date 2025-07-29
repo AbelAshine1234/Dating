@@ -1,98 +1,87 @@
-# React Video Call
+# Dating App with Video Call Feature
 
-Welcome to the React Video Call App, a real-time video calling application that allows users to connect with each other, providing the ability to initiate video calls and control their audio and video settings.
+This is a modern dating application built with React that includes core features such as user profile management, swipe-based matching with caste and interest filters, chat functionality, and an integrated video calling system.
 
-## Features
+---
 
-- Initiate video calls with other users.
-- Mute/unmute your microphone during a call.
-- Enable/disable your camera during a call.
-- User-friendly interface with intuitive controls.
-- Real-time communication using WebRTC and Socket.io.
-- Built with React, Context API, Ant Design, React Bootstrap, Aphrodite, React Copy to Clipboard, and React Icons.
+## Key Features Implemented
+
+- **User Profile Management**  
+  Users can create and edit detailed profiles including photo uploads, bios, interests, and toggle profile visibility (public/private).
+
+- **Swipe-Based Matching**  
+  Browse and swipe through profiles with rich filters including gender, age range, caste, and keywords to find compatible matches.
+
+- **Real-Time Chat**  
+  Text-based messaging between matched users, with support for image sharing and Telegram-like clean UI for conversations.
+
+- **Video Calling**  
+  Integrated real-time video call feature where users can initiate video calls directly from profiles they like, with controls to mute/unmute microphone and toggle camera.
+
+- **Authentication and Navigation**  
+  Separate login and registration UI flows that gate access to the app. After login, users can navigate to dating, profile, marriage, and video call sections.
+
+- **Subscription Flow**  
+  Before accessing video calling, users are prompted to select a subscription plan to unlock the video chat feature.
+
+---
 
 ## Technologies Used
 
-- React: A JavaScript library for building user interfaces.
-- Context API: Used for managing application-wide state and providing data to components.
-- WebRTC: A real-time communication technology for video and audio transmission.
-- Socket.io: Enables real-time, bidirectional communication between the server and clients.
-- Ant Design: A popular UI library for React applications with a rich set of components.
-- React Bootstrap: A library that combines React and Bootstrap for responsive and attractive UI design.
-- Aphrodite: A CSS-in-JS library for managing styles in a JavaScript environment.
-- React Copy to Clipboard: Provides a simple way to copy text to the clipboard.
-- React Icons: Offers a comprehensive set of icons for React applications.
+- **React** (including React Router) for frontend UI and navigation.  
+- **Context API** for app-wide state management.  
+- **WebRTC and Socket.io** powering real-time video communication.  
+- **CSS Modules / Custom CSS** for styling components.  
+- **Random User API** used for sample profile pictures in dummy data.
 
-## Installation
+---
 
-1. Clone this repository to your local machine:
+## Installation & Setup
 
-```
-git clone https://github.com/simranlotey/react-video-call.git
-```
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/dating-app.git
+Navigate to the project folder:
 
-2. Change into the project directory:
+bash
+Copy
+Edit
+cd dating-app
+Install dependencies:
 
-```
-cd react-video-call
-```
-
-3. Install the required dependencies:
-
-```
+bash
+Copy
+Edit
 npm install
-```
+Start the development server:
 
-4. Start the server:
-
-```
+bash
+Copy
+Edit
 npm start
-```
+Usage
+Register or login to your account.
 
-5. Install the required dependencies for the client:
+Create or update your profile.
 
-```
-cd client
-npm install
-```
+Browse and swipe on dating profiles filtered by caste, gender, age, and interests.
 
-6. Start the development server:
+Chat with matched users using real-time messaging.
 
-```
-npm start
-```
+Select a subscription plan to unlock video calling.
 
-7. Open your web browser and visit [http://localhost:3000](http://localhost:3000) to access the application.
+Initiate video calls directly from profiles you like.
 
-## Usage
+Future Enhancements
+Improve matching algorithm with AI/ML.
 
-1. Start a new video call by entering the ID of the person you want to call.
-2. Use the controls to mute/unmute your microphone and enable/disable your camera during the call.
-3. Enjoy real-time video communication with your friends and colleagues!
+Add safety and moderation tools.
 
-## Deployment
+Integrate event suggestions and premium subscriptions.
 
-- **Frontend Hosting**: The frontend of this application is hosted on [Netlify](https://www.netlify.com/). You can access it at [Frontend url](https://yourvideoshare.netlify.app/).
+Expand video call features with group calls and screen sharing.
 
-- **Backend Hosting**: The backend of this application is hosted on [Render.com](https://render.com/). You can access it at [Backend url](https://video-call-server-gm7i.onrender.com).
+Contact
+For questions or suggestions, feel free to reach out.
 
-## Contributing
-
-We welcome contributions from the community. If you'd like to contribute to the project, please follow these steps:
-
-1. Fork the repository.
-2. Create a new branch for your feature or bug fix.
-3. Make your changes and commit them.
-4. Push your changes to your fork.
-5. Submit a pull request to the `master` branch of this repository.
-
-## Contact
-
-If you have any questions or suggestions, please feel free to contact us at [simranlotey01@gmail.com](mailto:simranlotey01@gmail.com).
-
-Thank you for using the React Video Call App!
-
-
-
-
-
+Thank you for using this Dating App!
