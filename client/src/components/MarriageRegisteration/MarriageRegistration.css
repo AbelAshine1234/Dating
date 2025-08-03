@@ -1,81 +1,92 @@
 .marriage-registration {
-    max-width: 700px;
-    margin: 2rem auto;
-    background: #fff;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif;
-  }
-  
-  h2 {
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
-  
-  .registration-form .form-group {
-    margin-bottom: 1rem;
-  }
-  
-  .registration-form .form-row {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-  
-  .registration-form .form-group input,
-  .registration-form .form-group select,
-  .registration-form .form-group textarea {
-    width: 100%;
-    padding: 0.6rem;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 0.95rem;
-  }
-  
-  .registration-form .form-group textarea {
-    min-height: 80px;
-  }
-  
-  .registration-form .error {
-    color: red;
-    font-size: 0.85rem;
-  }
-  
-  .photo-upload .upload-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .upload-preview {
-    display: inline-flex;
-    width: 100px;
-    height: 100px;
-    border: 2px dashed #ccc;
-    border-radius: 50%;
-    justify-content: center;
-    align-items: center;
-    font-size: 2rem;
-    cursor: pointer;
-    overflow: hidden;
-  }
-  
-  .upload-preview img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  .submit-btn {
-    width: 100%;
-    padding: 0.75rem;
-    background-color: #007bff;
-    color: white;
-    font-weight: bold;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 1rem;
-  }
-  
+  max-width: 700px;
+  margin: 2rem auto;
+  background: rgba(255, 255, 255, 0.6);
+  /* transparent white */
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  font-family: Arial, sans-serif;
+  color: black;
+  /* all text color set to black */
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: black;
+  /* was white */
+}
+
+.registration-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.registration-form .form-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.registration-form .form-group input,
+.registration-form .form-group select,
+.registration-form .form-group textarea {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid black;
+  /* updated to match black text */
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.5);
+  /* transparent white input background */
+  color: black;
+}
+
+.registration-form .form-group textarea {
+  min-height: 80px;
+}
+
+.registration-form .error {
+  color: red;
+  font-size: 0.85rem;
+}
+
+.photo-upload .upload-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.upload-preview {
+  display: inline-flex;
+  width: 100px;
+  height: 100px;
+  border: 2px dashed black;
+  /* changed from white */
+  border-radius: 50%;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  cursor: pointer;
+  overflow: hidden;
+  color: black;
+  /* changed from white */
+}
+
+.upload-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #8b0000;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+}

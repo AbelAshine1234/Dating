@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+} from "react-router-dom";
+
+// Import background image
+import bgImage from "./assets/background2.jpg";
 
 import NavBar from "./components/NavBar/NavBar";
 import Register from "./components/Register/Register";
@@ -11,13 +20,15 @@ import MarriageSwipe from "./components/MarriageSwipe/MarriageSwipe.jsx";
 import MarriageRegistration from "./components/MarriageRegisteration/MarriageRegisteration";
 import ProfileManagement from "./components/ProfileManagement/ProfileManagement.jsx";
 import ChatRoom from "./components/ChatRoom/ChatRoom.jsx";
+import Home from "./components/Home/Home.jsx";
 
-// Wrapper for protected routes (fake auth simulation)
+// Wrapper for protected routes
 const ProtectedApp = () => {
   return (
     <>
       <NavBar />
       <Routes>
+        <Route path="home" element={<Home />} />
         <Route path="dating" element={<SwipeDating />} />
         <Route path="marriage" element={<MarriageSwipe />} />
         <Route path="marriage/register" element={<MarriageRegistration />} />
@@ -31,46 +42,119 @@ const ProtectedApp = () => {
     </>
   );
 };
-
 const LoginWrapper = () => {
   const navigate = useNavigate();
 
-  // Just a UI-only login handler: clicking login redirects to main app
   const handleLogin = (e) => {
     e.preventDefault();
-    // Here you would do actual login logic, then navigate
-    navigate("/dating");
+    navigate("/home");
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "4rem auto", padding: 20, textAlign: "center", fontFamily: "Segoe UI, sans-serif" }}>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <input type="email" placeholder="Email" required style={{ padding: 10, fontSize: 16, borderRadius: 8, border: "1px solid #ccc" }} />
-        <input type="password" placeholder="Password" required style={{ padding: 10, fontSize: 16, borderRadius: 8, border: "1px solid #ccc" }} />
-        <button type="submit" style={{ padding: 12, fontSize: 16, borderRadius: 8, backgroundColor: "#e60073", color: "white", border: "none", cursor: "pointer" }}>
-          Login
-        </button>
-      </form>
-      <p style={{ marginTop: 16 }}>
-        Don't have an account? <a href="/register">Register</a>
-      </p>
+    <div
+      style={{
+        backgroundImage: `url(${bgImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        fontFamily: "'Poppins', 'Segoe UI', sans-serif",
+        color: "#333",
+        padding: "2rem",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 400,
+          width: "100%",
+          padding: 30,
+          borderRadius: 16,
+          backgroundColor: "rgba(255, 255, 255, 0.25)", // Transparent white
+          backdropFilter: "blur(10px)",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.25)",
+          textAlign: "center",
+        }}
+      >
+        <h2 style={{ color: "#8b0000", marginBottom: 20, fontWeight: "600" }}>
+          Welcome Back ❤️
+        </h2>
+        <form
+          onSubmit={handleLogin}
+          style={{ display: "flex", flexDirection: "column", gap: 16 }}
+        >
+          <input
+            type="email"
+            placeholder="Email"
+            required
+            style={{
+              padding: 12,
+              fontSize: 16,
+              borderRadius: 10,
+              border: "1px solid #ccc",
+              backgroundColor: "rgba(255, 255, 255, 0.8)",
+              color: "#333",
+              fontFamily: "inherit",
+            }}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            required
+            style={{
+              padding: 12,
+              fontSize: 16,
+              borderRadius: 10,
+              border: "1px solid #ccc",
+              backgroundColor: "rgba(255, 255, 255, 0.8)",
+              color: "#333",
+              fontFamily: "inherit",
+            }}
+          />
+          <button
+            type="submit"
+            style={{
+              padding: 12,
+              fontSize: 16,
+              borderRadius: 10,
+              backgroundColor: "#8b0000",
+              color: "white",
+              border: "none",
+              cursor: "pointer",
+              fontWeight: "600",
+              transition: "opacity 0.3s ease",
+            }}
+          >
+            Login
+          </button>
+        </form>
+        <p style={{ marginTop: 16, fontSize: 14 }}>
+          Don't have an account?{" "}
+          <a
+            href="/register"
+            style={{
+              color: "#8b0000",
+              textDecoration: "underline",
+              fontWeight: "500",
+            }}
+          >
+            Register
+          </a>
+        </p>
+      </div>
     </div>
   );
 };
+
 
 const App = () => {
   return (
     <Router>
       <Routes>
-        {/* Start at /login */}
         <Route path="/login" element={<LoginWrapper />} />
         <Route path="/register" element={<Register />} />
-
-        {/* Protected app routes */}
         <Route path="/*" element={<ProtectedApp />} />
-
-        {/* Redirect root to login */}
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>

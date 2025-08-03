@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./ChatRoom.css";
+import Footer from "../Footer/Footer";
 
 const initialMessages = [
   {
@@ -61,61 +62,66 @@ const ChatRoom = () => {
   }, [messages]);
 
   return (
-    <div className="chat-container">
-      <h3 className="chat-title">Chat with Liya</h3>
-      <div className="chat-box">
-        {messages.map((msg, i) => (
-          <div key={i} className={`message-row ${msg.sender}`}>
-            {msg.sender === "them" && (
-              <img className="avatar" src={msg.avatar} alt="avatar" />
-            )}
-            <div className="message-bubble">
-              {msg.image ? (
-                <img className="message-image" src={msg.image} alt="sent pic" />
-              ) : (
-                <p className="message-text">{msg.text}</p>
+    <>
+      <div className="chat-container">
+        <h3 className="chat-title">Chat with Liya</h3>
+        <div className="chat-box">
+          {messages.map((msg, i) => (
+            <div key={i} className={`message-row ${msg.sender}`}>
+              {msg.sender === "them" && (
+                <img className="avatar" src={msg.avatar} alt="avatar" />
               )}
-              <span className="message-time">{msg.timestamp}</span>
+              <div className="message-bubble">
+                {msg.image ? (
+                  <img className="message-image" src={msg.image} alt="sent pic" />
+                ) : (
+                  <p className="message-text">{msg.text}</p>
+                )}
+                <span className="message-time">{msg.timestamp}</span>
+              </div>
+              {msg.sender === "me" && (
+                <img className="avatar" src={msg.avatar} alt="avatar" />
+              )}
             </div>
-            {msg.sender === "me" && (
-              <img className="avatar" src={msg.avatar} alt="avatar" />
-            )}
+          ))}
+          <div ref={chatEndRef} />
+        </div>
+
+        <form className="chat-input" onSubmit={handleSend}>
+          <input
+            type="text"
+            placeholder="Type a message..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            autoComplete="off"
+            disabled={!!image}
+          />
+          <label htmlFor="image-upload" className="image-upload-label" title="Attach image">
+            📎
+          </label>
+          <input
+            id="image-upload"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            style={{ display: "none" }}
+          />
+          <button type="submit" disabled={!message.trim() && !image}>
+            Send
+          </button>
+        </form>
+
+        {image && (
+          <div className="image-preview">
+            <img src={URL.createObjectURL(image)} alt="preview" />
+            <button onClick={() => setImage(null)} title="Remove image">✖</button>
           </div>
-        ))}
-        <div ref={chatEndRef} />
+        )}
       </div>
 
-      <form className="chat-input" onSubmit={handleSend}>
-        <input
-          type="text"
-          placeholder="Type a message..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          autoComplete="off"
-          disabled={!!image}
-        />
-        <label htmlFor="image-upload" className="image-upload-label" title="Attach image">
-          📎
-        </label>
-        <input
-          id="image-upload"
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          style={{ display: "none" }}
-        />
-        <button type="submit" disabled={!message.trim() && !image}>
-          Send
-        </button>
-      </form>
-
-      {image && (
-        <div className="image-preview">
-          <img src={URL.createObjectURL(image)} alt="preview" />
-          <button onClick={() => setImage(null)} title="Remove image">✖</button>
-        </div>
-      )}
-    </div>
+      {/* Footer outside the chat container */}
+      <Footer />
+    </>
   );
 };
 

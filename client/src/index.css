@@ -3,11 +3,18 @@
 * {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-  background-color: #d0bdd4 !important;
+  background-color: black !important;background-color: black;
+    background-image: url("./assets/background1.jpg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
   font-family: "Inter", sans-serif;
+  color: white;
+  min-height: 100vh;
 }
 
 ::-webkit-scrollbar {
