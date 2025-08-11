@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: ./api
+    container_name: dating-api
+    command: npm run dev
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./api:/app               # Mount source code for hot reload
+      - /app/node_modules        # Anonymous volume for node_modules to persist container modules
+    depends_on:
+      - postgres
+    env_file:
+      - ./api/.env
+    networks:
+      - dating-net
+
+  postgres:
+    image: postgres:15
+    container_name: dating-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: datingdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - dating-net
+
+networks:
+  dating-net:
+    driver: bridge
+
+volumes:
+  pgdata:
