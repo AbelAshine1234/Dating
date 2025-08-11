@@ -21,6 +21,7 @@ import MarriageRegistration from "./components/MarriageRegisteration/MarriageReg
 import ProfileManagement from "./components/ProfileManagement/ProfileManagement.jsx";
 import ChatRoom from "./components/ChatRoom/ChatRoom.jsx";
 import Home from "./components/Home/Home.jsx";
+import ReduxExample from "./components/ReduxExample/ReduxExample.jsx";
 
 // Wrapper for protected routes
 const ProtectedApp = () => {
@@ -36,6 +37,7 @@ const ProtectedApp = () => {
         <Route path="chat" element={<ChatRoom />} />
         <Route path="subscription" element={<Subscription />} />
         <Route path="video-chat" element={<Subscription />} />
+        <Route path="x" element={<ReduxExample />} />
         <Route path="video-chat/call" element={<Calling />} />
         <Route path="*" element={<Navigate to="dating" replace />} />
       </Routes>

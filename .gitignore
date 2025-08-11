@@ -1,4 +1,10 @@
-client/node_modules/*
-server/node_modules/*
-server/api/node_modules/*
-/server/api/node_modules/
+# Ignore all node_modules folders anywhere in the project
+**/node_modules/
+
+# Optional: Ignore lock files if you want (not recommended generally)
+# package-lock.json
+# yarn.lock
+
+# Other common ignores (optional)
+.DS_Store
+.env
