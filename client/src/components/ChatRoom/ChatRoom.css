@@ -2,14 +2,14 @@
   max-width: 480px;
   margin: 3rem auto;
   background-color: rgba(139, 0, 0, 0.7);
-  backdrop-filter: blur(12px); /* Slightly stronger blur */
+  backdrop-filter: blur(12px); 
   -webkit-backdrop-filter: blur(12px);
   border-radius: 14px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   padding: 1.5rem;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #fff;
-  height: 700px; /* Taller container */
+  height: 700px; 
   display: flex;
   flex-direction: column;
 }
@@ -62,7 +62,7 @@
 
 .contact-item:hover {
   background-color: rgba(255, 255, 255, 0.2);
-  transform: scale(1.02); /* Slight scale on hover */
+  transform: scale(1.02);
 }
 
 .contact-item::after {
@@ -77,11 +77,11 @@
 }
 
 .contact-item:hover::after {
-  width: 100%; /* White underline on hover */
+  width: 100%; 
 }
 
 .contact-item:not(:last-child) {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Divider */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2); 
 }
 
 .contact-avatar-container {
@@ -110,7 +110,7 @@
 
 .contact-info {
   flex-grow: 1;
-  min-width: 0; /* Prevent overflow */
+  min-width: 0;
 }
 
 .contact-name {
@@ -164,7 +164,7 @@
   .chat-room-container {
     margin: 1.5rem;
     padding: 1rem;
-    height: 600px; /* Slightly shorter for mobile */
+    height: 600px;
   }
 
   .chat-room-title {
