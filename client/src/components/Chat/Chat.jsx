@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
-import notification from "../../assets/notification.mp3";
-import { Modal, FormControl } from "react-bootstrap";
-import { toast, ToastContainer } from "react-toastify";
-import { AiOutlineMessage } from "react-icons/ai";
-import { BsSendFill, BsEmojiSmile } from "react-icons/bs";
-import Picker from "emoji-picker-react";
-import "./Chat.css";
+// src/components/Chat/Chat.jsx
+import React, { useEffect, useRef, useState } from 'react';
+import { Modal, FormControl } from 'react-bootstrap';
+import { toast, ToastContainer } from 'react-toastify';
+import { AiOutlineMessage } from 'react-icons/ai';
+import { BsSendFill, BsEmojiSmile } from 'react-icons/bs';
+import Picker from 'emoji-picker-react';
+import './Chat.css';
 
 const ChatModal = ({
   isVisible,
@@ -22,7 +22,7 @@ const ChatModal = ({
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "auto" });
+      messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
     }
   };
 
@@ -49,13 +49,13 @@ const ChatModal = ({
   const handleSend = () => {
     if (sendMessage.trim()) {
       onSearch(sendMessage);
-      setSendMessage("");
+      setSendMessage('');
       setShowEmojiPicker(false);
     }
   };
 
   const handleKeyPress = (event) => {
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
       event.preventDefault();
       handleSend();
     }
@@ -101,9 +101,7 @@ const ChatModal = ({
                 <React.Fragment key={index}>
                   <div
                     className={
-                      message.type === "sent"
-                        ? "message-sent"
-                        : "message-reciever"
+                      message.type === 'sent' ? 'message-sent' : 'message-reciever'
                     }
                   >
                     {message.message}
@@ -143,11 +141,7 @@ const ChatModal = ({
                 className="emoji"
               />
             )}
-            <BsSendFill
-              className="send-message"
-              size={30}
-              onClick={handleSend}
-            />
+            <BsSendFill className="send-message" size={30} onClick={handleSend} />
           </div>
         </Modal.Footer>
       </Modal>
