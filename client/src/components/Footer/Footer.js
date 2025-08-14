@@ -67,4 +67,4 @@ const Footer = () => {
 };
 
 export default Footer;
-// Style Definitions
+
