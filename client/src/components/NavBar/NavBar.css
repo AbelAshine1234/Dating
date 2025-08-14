@@ -2,8 +2,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: rgba(139, 0, 0, 0.9) !important;
-    /* Transparent dark red */
+    background-color: rgba(139, 0, 0, 0.7); /* Slightly more transparent for blur effect */
+    backdrop-filter: blur(10px); /* Adds blur effect to background */
+    -webkit-backdrop-filter: blur(10px); /* For Safari compatibility */
     padding: 1rem 2rem;
     font-family: 'Segoe UI', sans-serif;
     position: sticky;
@@ -14,13 +15,10 @@
 
 .nav-brand {
     font-size: 2rem;
-    color: #ffffff !important;
-    /* Force white text */
+    color: #ffffff;
     font-weight: bold;
     letter-spacing: 1px;
     text-transform: uppercase;
-    -webkit-text-stroke: 0px;
-    /* Remove stroke if it affects visibility */
 }
 
 .nav-links {
@@ -29,23 +27,34 @@
 }
 
 .nav-links a {
-    color: #ffffff !important;
-    /* Ensure text color is white */
-    background-color: transparent;
+    color: #ffffff;
     text-decoration: none;
     font-weight: 600;
     font-size: 1rem;
     padding: 0.5rem 1rem;
     border-radius: 6px;
     transition: all 0.3s ease;
-    border: 1px solid transparent;
-    -webkit-text-stroke: 0px;
-    /* Remove stroke effect */
+    position: relative; /* Needed for the underline effect */
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: #ffffff; 
+    transition: width 0.3s ease; 
+}
+
+.nav-links a:hover::after {
+    width: 100%; 
 }
 
 .nav-links a:hover {
-    background-color: #8b0000;
-    color: black !important;
+    background-color: #8b0000; 
+    color: #ffffff; 
 }
 
 @media (max-width: 768px) {
@@ -64,5 +73,14 @@
     .nav-links a {
         width: 100%;
         text-align: left;
+    }
+
+    .nav-links a::after {
+        left: 1rem; 
+        width: 0; 
+    }
+
+    .nav-links a:hover::after {
+        width: calc(100% - 2rem); 
     }
 }
