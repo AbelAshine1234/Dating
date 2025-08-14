@@ -1,0 +1,8 @@
+{
+  "name": "DATEMATCH",
+  "description": "A modern, futuristic dating and marriage application. Find love your way with our innovative swipe interface, tailored modes for dating and marriage, and seamless user experience.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
