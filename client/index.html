@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DATEMATCH - Find Love. Your Way.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['PT Sans', 'sans-serif'],
+              heading: ['Space Grotesk', 'sans-serif'],
+            },
+            colors: {
+              'neon-purple': '#8A2BE2',
+              'neon-magenta': '#FF3CAC',
+              'dark-bg': '#121212',
+              'light-bg': '#F5F5F5'
+            },
+            keyframes: {
+              'slide-in': {
+                '0%': { transform: 'translateX(100%)', opacity: '0' },
+                '100%': { transform: 'translateX(0)', opacity: '1' },
+              },
+              'slide-out': {
+                '0%': { transform: 'translateX(0)', opacity: '1' },
+                '100%': { transform: 'translateX(100%)', opacity: '0' },
+              },
+              'fade-in': {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+               'glow': {
+                '0%, 100%': { textShadow: '0 0 5px #FF3CAC, 0 0 10px #FF3CAC, 0 0 15px #FF3CAC' },
+                '50%': { textShadow: '0 0 10px #8A2BE2, 0 0 20px #8A2BE2, 0 0 30px #8A2BE2' }
+              }
+            },
+            animation: {
+              'slide-in': 'slide-in 0.5s ease-out forwards',
+              'slide-out': 'slide-out 0.5s ease-in forwards',
+              'fade-in': 'fade-in 0.7s ease-in-out',
+              'glow': 'glow 3s ease-in-out infinite'
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      .angled-swipe-right { transform: translateX(120%) rotate(10deg) !important; }
+      .angled-swipe-left { transform: translateX(-120%) rotate(-10deg) !important; }
+      .swipe-card-transition { transition: transform 0.6s ease-out; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.1.1",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.1/",
+    "react/": "https://esm.sh/react@^19.1.1/",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.8.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-light-bg dark:bg-dark-bg text-gray-800 dark:text-gray-200 font-sans">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
