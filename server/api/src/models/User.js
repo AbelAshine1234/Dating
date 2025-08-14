@@ -45,7 +45,14 @@ const User = sequelize.define('User', {
     allowNull: false,
   },
   interests: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
+    type: DataTypes.STRING, // Changed from ARRAY to STRING for SQLite compatibility
+    get() {
+      const rawValue = this.getDataValue('interests');
+      return rawValue ? JSON.parse(rawValue) : [];
+    },
+    set(value) {
+      this.setDataValue('interests', JSON.stringify(value));
+    }
   },
   callerId: {
     type: DataTypes.STRING,
