@@ -3,9 +3,7 @@ import { useAppDispatch, useAuth, useDating, useUser } from '../../store/hooks';
 import { 
   loginSuccess, 
   logout, 
-  addMatch, 
-  setFilters,
-  updateProfile 
+  updateUser 
 } from '../../store/slices/authSlice';
 import { addMatch as addDatingMatch } from '../../store/slices/datingSlice';
 import { updateProfile as updateUserProfile } from '../../store/slices/userSlice';
@@ -46,15 +44,12 @@ const ReduxExample = () => {
   };
 
   const handleUpdateFilters = () => {
-    dispatch(setFilters({
-      ageRange: [20, 30],
-      distance: 25,
-      gender: 'female'
-    }));
+    // Note: setFilters is not available in authSlice, this is just for demo
+    console.log('Update filters functionality would go here');
   };
 
   const handleUpdateProfile = () => {
-    dispatch(updateUserProfile({
+    dispatch(updateUser({
       bio: 'Updated bio from Redux!',
       interests: ['travel', 'music', 'cooking']
     }));
@@ -68,7 +63,7 @@ const ReduxExample = () => {
         <h3>Authentication State</h3>
         {isAuthenticated ? (
           <div>
-            <p>✅ Logged in as: {user?.name}</p>
+            <p>✅ Logged in as: {user?.name || user?.fullName}</p>
             <p>Email: {user?.email}</p>
             <button onClick={handleLogout} className="btn btn-danger">
               Logout
@@ -87,24 +82,24 @@ const ReduxExample = () => {
       <div className="section">
         <h3>Dating State</h3>
         <p>Matches: {matches.length}</p>
-        <p>Age Range: {filters.ageRange[0]} - {filters.ageRange[1]}</p>
-        <p>Distance: {filters.distance} km</p>
-        <p>Gender: {filters.gender}</p>
+        <p>Age Range: {filters?.ageRange?.[0] || 18} - {filters?.ageRange?.[1] || 50}</p>
+        <p>Distance: {filters?.distance || 25} km</p>
+        <p>Gender: {filters?.gender || 'any'}</p>
         
         <div className="button-group">
           <button onClick={handleAddMatch} className="btn btn-primary">
             Add Demo Match
           </button>
           <button onClick={handleUpdateFilters} className="btn btn-info">
-            Update Filters
+            Update Filters (Demo)
           </button>
         </div>
       </div>
 
       <div className="section">
         <h3>User Profile State</h3>
-        <p>Bio: {profile?.bio || 'No bio set'}</p>
-        <p>Interests: {profile?.interests?.join(', ') || 'No interests set'}</p>
+        <p>Bio: {profile?.bio || user?.description || 'No bio set'}</p>
+        <p>Interests: {profile?.interests?.join(', ') || user?.interests?.join(', ') || 'No interests set'}</p>
         
         <button onClick={handleUpdateProfile} className="btn btn-warning">
           Update Profile
