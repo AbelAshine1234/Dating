@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
-  useNavigate,
 } from "react-router-dom";
+import { useAppDispatch, useAuth } from "./store/hooks";
+import { loginSuccess, logout } from "./store/slices/authSlice";
 
 // Import background image
 import bgImage from "./assets/background2.jpg";
@@ -21,6 +22,7 @@ import MarriageRegistration from "./components/MarriageRegisteration/MarriageReg
 import ProfileManagement from "./components/ProfileManagement/ProfileManagement.jsx";
 import ChatRoom from "./components/ChatRoom/ChatRoom.jsx";
 import Home from "./components/Home/Home.jsx";
+import ReduxExample from "./components/ReduxExample/ReduxExample.jsx";
 
 // Wrapper for protected routes
 const ProtectedApp = () => {
@@ -36,23 +38,43 @@ const ProtectedApp = () => {
         <Route path="chat" element={<ChatRoom />} />
         <Route path="subscription" element={<Subscription />} />
         <Route path="video-chat" element={<Subscription />} />
+        <Route path="x" element={<ReduxExample />} />
         <Route path="video-chat/call" element={<Calling />} />
         <Route path="*" element={<Navigate to="dating" replace />} />
       </Routes>
     </>
   );
 };
-const LoginWrapper = () => {
-  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    navigate("/home");
-  };
+const App = () => {
+  const dispatch = useAppDispatch();
+  const { isAuthenticated, loading } = useAuth();
 
-  return (
-    <div
-      style={{
+  useEffect(() => {
+    // Check if user is authenticated on app load
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    if (token && user) {
+      try {
+        const userData = JSON.parse(user);
+        dispatch(loginSuccess({
+          user: userData,
+          token: token
+        }));
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        // Clear invalid data
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        dispatch(logout());
+      }
+    }
+  }, [dispatch]);
+
+  if (loading) {
+    return (
+      <div style={{
         backgroundImage: `url(${bgImage})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
@@ -62,100 +84,30 @@ const LoginWrapper = () => {
         alignItems: "center",
         fontFamily: "'Poppins', 'Segoe UI', sans-serif",
         color: "#333",
-        padding: "2rem",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 400,
-          width: "100%",
+      }}>
+        <div style={{
           padding: 30,
           borderRadius: 16,
-          backgroundColor: "rgba(255, 255, 255, 0.25)", // Transparent white
+          backgroundColor: "rgba(255, 255, 255, 0.25)",
           backdropFilter: "blur(10px)",
           boxShadow: "0 8px 32px rgba(0, 0, 0, 0.25)",
           textAlign: "center",
-        }}
-      >
-        <h2 style={{ color: "#8b0000", marginBottom: 20, fontWeight: "600" }}>
-          Welcome Back ❤️
-        </h2>
-        <form
-          onSubmit={handleLogin}
-          style={{ display: "flex", flexDirection: "column", gap: 16 }}
-        >
-          <input
-            type="email"
-            placeholder="Email"
-            required
-            style={{
-              padding: 12,
-              fontSize: 16,
-              borderRadius: 10,
-              border: "1px solid #ccc",
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              color: "#333",
-              fontFamily: "inherit",
-            }}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            style={{
-              padding: 12,
-              fontSize: 16,
-              borderRadius: 10,
-              border: "1px solid #ccc",
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              color: "#333",
-              fontFamily: "inherit",
-            }}
-          />
-          <button
-            type="submit"
-            style={{
-              padding: 12,
-              fontSize: 16,
-              borderRadius: 10,
-              backgroundColor: "#8b0000",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-              fontWeight: "600",
-              transition: "opacity 0.3s ease",
-            }}
-          >
-            Login
-          </button>
-        </form>
-        <p style={{ marginTop: 16, fontSize: 14 }}>
-          Don't have an account?{" "}
-          <a
-            href="/register"
-            style={{
-              color: "#8b0000",
-              textDecoration: "underline",
-              fontWeight: "500",
-            }}
-          >
-            Register
-          </a>
-        </p>
+        }}>
+          <h2 style={{ color: "#8b0000", marginBottom: 20, fontWeight: "600" }}>
+            Loading... ❤️
+          </h2>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
 
-
-const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<LoginWrapper />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/*" element={<ProtectedApp />} />
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/home" replace /> : <Login />} />
+        <Route path="/register" element={isAuthenticated ? <Navigate to="/home" replace /> : <Register />} />
+        <Route path="/*" element={isAuthenticated ? <ProtectedApp /> : <Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to={isAuthenticated ? "/home" : "/login"} replace />} />
       </Routes>
     </Router>
   );

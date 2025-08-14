@@ -6,32 +6,26 @@ const Chat = require('./Chat');
 
 // User has many Pictures (one-to-many)
 User.hasMany(Picture, { 
-  foreignKey: { allowNull: false },  // picture must have a userId
-  onDelete: 'CASCADE' 
+  foreignKey: { allowNull: false },
+  onDelete: 'CASCADE'
 });
 Picture.belongsTo(User);
 
-// Other associations as before...
-// User has many Payments
+// User has many Payments (one-to-many)
 User.hasMany(Payment, { onDelete: 'CASCADE' });
 Payment.belongsTo(User);
 
-// User ↔ User via Chat (many-to-many)
-User.belongsToMany(User, {
-  through: Chat,
-  as: 'Sender',
-  foreignKey: 'senderId'
-});
-User.belongsToMany(User, {
-  through: Chat,
-  as: 'Receiver',
-  foreignKey: 'receiverId'
-});
+// Chat associations (sender/receiver)
+User.hasMany(Chat, { foreignKey: 'senderId', as: 'SentChats', onDelete: 'CASCADE' });
+User.hasMany(Chat, { foreignKey: 'receiverId', as: 'ReceivedChats', onDelete: 'CASCADE' });
+
+Chat.belongsTo(User, { foreignKey: 'senderId', as: 'Sender' });
+Chat.belongsTo(User, { foreignKey: 'receiverId', as: 'Receiver' });
 
 module.exports = {
   sequelize,
   User,
   Picture,
   Payment,
-  Chat
+  Chat,
 };
