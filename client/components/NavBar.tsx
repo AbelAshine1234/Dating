@@ -29,7 +29,7 @@ export default function NavBar() {
               onClick={() => router.push('/')}
               className="text-2xl font-bold neon-glow cursor-pointer"
             >
-              LoveSync
+              DATEMATCH
             </button>
 
             {/* Desktop Menu */}

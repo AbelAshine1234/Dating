@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Heart, X, Phone, MessageCircle, RotateCcw, Sparkles } from 'lucide-react';
 import { sampleUsers } from '@/data/sampleUsers';
 import SignUpForm from '@/components/SignUpForm';
@@ -13,7 +13,7 @@ export default function Dating() {
 
   const currentUser = users[currentIndex];
 
-  const handleSwipe = (direction: 'left' | 'right' | 'up') => {
+  const handleSwipe = useCallback((direction: 'left' | 'right' | 'up') => {
     if (currentIndex >= users.length) return;
     
     setSwipeDirection(direction);
@@ -21,12 +21,36 @@ export default function Dating() {
       setCurrentIndex(prev => prev + 1);
       setSwipeDirection(null);
     }, 300);
-  };
+  }, [currentIndex, users.length]);
 
-  const resetCards = () => {
+  const resetCards = useCallback(() => {
     setCurrentIndex(0);
     setSwipeDirection(null);
-  };
+  }, []);
+
+  // Keyboard event listener for arrow keys
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (currentIndex >= users.length) return;
+
+      switch (event.key) {
+        case 'ArrowLeft':
+          handleSwipe('left');
+          break;
+        case 'ArrowUp':
+          handleSwipe('up');
+          break;
+        case 'ArrowRight':
+          handleSwipe('right');
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [currentIndex, users.length, handleSwipe]);
 
   if (currentIndex >= users.length) {
     return (
@@ -38,6 +62,7 @@ export default function Dating() {
           <button
             onClick={resetCards}
             className="flex items-center gap-2 mx-auto px-6 py-3 bg-neon rounded-xl hover:bg-neon/80 transition-colors"
+            aria-label="Refresh matches"
           >
             <RotateCcw className="w-5 h-5" />
             Refresh
@@ -56,6 +81,7 @@ export default function Dating() {
       <button
         onClick={() => setShowSignUp(true)}
         className="fixed top-24 right-4 z-30 px-6 py-3 bg-magenta rounded-full text-white font-semibold hover:bg-magenta/80 transition-all duration-300 card-hover pulse-glow"
+        aria-label="Open sign-up form"
       >
         Sign Up Now
       </button>
@@ -119,6 +145,7 @@ export default function Dating() {
             <button
               onClick={() => handleSwipe('left')}
               className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-400 transition-all duration-300 card-hover"
+              aria-label="Pass on this match"
             >
               <X className="w-8 h-8" />
             </button>
@@ -126,6 +153,7 @@ export default function Dating() {
             <button
               onClick={() => handleSwipe('up')}
               className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-400 transition-all duration-300 card-hover"
+              aria-label="Call this match"
             >
               <Phone className="w-8 h-8" />
             </button>
@@ -133,6 +161,7 @@ export default function Dating() {
             <button
               onClick={() => handleSwipe('right')}
               className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center hover:bg-green-400 transition-all duration-300 card-hover"
+              aria-label="Like this match"
             >
               <Heart className="w-8 h-8" />
             </button>

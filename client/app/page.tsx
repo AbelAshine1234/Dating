@@ -76,7 +76,7 @@ export default function Home() {
           {/* Features Preview */}
           <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {[
-              { title: 'Smart Matching', desc: 'AI-powered compatibility analysis' },
+              { title: 'Smart Matching', desc: 'Compatibility analysis' },
               { title: 'Video Calls', desc: 'Face-to-face conversations' },
               { title: 'Secure Chat', desc: 'Private messaging system' }
             ].map((feature, index) => (
