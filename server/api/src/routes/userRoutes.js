@@ -6,9 +6,9 @@ const { validateRegister } = require('../middleware/userValidation'); // Joi val
 const auth = require('../middleware/auth'); // JWT authentication middleware
 const userController = require('../controllers/userController');
 
-// Public routes (no authentication required)
+// // Public routes (no authentication required)
 router.post(
-  '/register',
+  '/',
   upload.array('images', 5),    // multer: accept up to 5 files under "images"
   validateRegister,             // Joi validation + manual file check
   userController.register       // your controller logic
@@ -16,10 +16,19 @@ router.post(
 
 router.post('/login', userController.login);
 
-// Protected routes (authentication required)
+// // Protected routes (authentication required)
 router.use(auth);
 router.get('/profile', userController.getProfile);
-router.get('/users', userController.getAllUsers);
+router.put('/profile', userController.updateProfile);
+router.put('/status', userController.updateOnlineStatus);
 router.get('/browse', userController.browseUsers);
+
+
+// GET ALL USERS
+router.get('/', userController.getAllUsers);
+
+
+
+
 
 module.exports = router;

@@ -8,21 +8,27 @@ const app = express();
 
 app.use(cors());                       // <-- enable CORS for all routes (allow all origins)
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Routes
 const userRoutes = require('./routes/userRoutes');
 const recommendationRoutes = require('./routes/recommendationRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const matchRoutes = require('./routes/matchRoutes');
 
-app.use('/api/users', recommendationRoutes);
+app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/chats', chatRoutes);
+app.use('/api/matches', matchRoutes);
 
 // Health check
 app.get('/', (req, res) => res.send('Dating API is running...'));
 
 // Database connection & server start
-sequelize.sync()
+const isProduction = process.env.NODE_ENV === 'production';
+const dialect = typeof sequelize.getDialect === 'function' ? sequelize.getDialect() : 'sqlite';
+const useAlter = !isProduction && dialect !== 'sqlite';
+sequelize.sync(useAlter ? { alter: true } : undefined)
   .then(() => {
     console.log('Database connected');
     app.listen(process.env.PORT || 4000, () =>
