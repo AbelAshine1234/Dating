@@ -1,10 +1,13 @@
-import React, { useState, useContext, useCallback, useMemo } from 'react';
+import React, { useState, useContext, useCallback, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { sampleUsers, filterData } from '../data/sampleData';
-import { User, NotificationType } from '../types';
+import { sampleUsers, filterData, currentUser } from '../data/sampleData';
+import { User, NotificationType, Message } from '../types';
 import { SwipeCard } from '../components/SwipeCard';
 import { NotificationContext } from '../context/NotificationContext';
 import { HeartIcon, XIcon, PhoneIcon, VideoIcon, MessageIcon, RefreshCwIcon, FilterIcon } from '../constants';
+import { ChatWindow, ChatWindowData, RandomChatInvitation } from '../components/ChatWindow';
+import { MainChatWindow } from '../components/MainChatWindow';
+import { DefaultChatButton } from '../components/DefaultChatButton';
 
 const ActionButton: React.FC<{ onClick: () => void; children: React.ReactNode; className: string }> = ({ onClick, children, className }) => (
   <button onClick={onClick} className={`p-4 rounded-full transition-all duration-300 ease-in-out transform hover:scale-110 ${className}`}>
@@ -53,6 +56,12 @@ export const DatingSwipe: React.FC = () => {
   const [selectedCaste, setSelectedCaste] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
+  // Chat system state
+  const [chatWindows, setChatWindows] = useState<ChatWindowData[]>([]);
+  const [randomInvitations, setRandomInvitations] = useState<RandomChatInvitation[]>([]);
+  const [randomChatEnabled, setRandomChatEnabled] = useState(false);
+  const [isMainChatOpen, setIsMainChatOpen] = useState(false);
+
   const filteredUsers = useMemo(() => {
     let users = sampleUsers;
     if (selectedReligion && selectedReligion !== 'all') {
@@ -94,6 +103,108 @@ export const DatingSwipe: React.FC = () => {
   React.useEffect(() => {
     resetDeck();
   }, [filteredUsers, resetDeck]);
+
+  // Generate random chat invitations
+  useEffect(() => {
+    if (randomChatEnabled) {
+      const interval = setInterval(() => {
+        if (randomInvitations.length < 3) { // Limit to 3 pending invitations
+          const availableUsers = sampleUsers.filter(user => 
+            user.id !== currentUser.id && 
+            !randomInvitations.some(inv => inv.user.id === user.id) &&
+            !chatWindows.some(cw => cw.user?.id === user.id)
+          );
+          
+          if (availableUsers.length > 0) {
+            const randomUser = availableUsers[Math.floor(Math.random() * availableUsers.length)];
+            const newInvitation: RandomChatInvitation = {
+              id: `inv-${Date.now()}-${Math.random()}`,
+              user: randomUser,
+              status: 'pending'
+            };
+            setRandomInvitations(prev => [...prev, newInvitation]);
+          }
+        }
+      }, 5000); // Generate invitation every 5 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [randomChatEnabled, randomInvitations.length, chatWindows]);
+
+  // Chat window management functions
+  const openChatWindow = (user: User, messages?: Message[]) => {
+    const newWindow: ChatWindowData = {
+      id: `chat-${Date.now()}-${Math.random()}`,
+      type: 'chat',
+      user,
+      messages: messages || [],
+      isMinimized: false
+    };
+    
+    setChatWindows(prev => [...prev, newWindow]);
+  };
+
+  const handleMinimize = (id: string) => {
+    setChatWindows(prev => 
+      prev.map(cw => 
+        cw.id === id ? { ...cw, isMinimized: true } : cw
+      )
+    );
+  };
+
+  const handleMaximize = (id: string) => {
+    setChatWindows(prev => 
+      prev.map(cw => 
+        cw.id === id ? { ...cw, isMinimized: false } : cw
+      )
+    );
+  };
+
+  const handleClose = (id: string) => {
+    setChatWindows(prev => prev.filter(cw => cw.id !== id));
+  };
+
+      const handleSendMessage = (message: string) => {
+        // This would typically send to backend
+        console.log('Sending message:', message);
+    };
+
+    const handleOpenMainChat = () => {
+        setIsMainChatOpen(true);
+    };
+
+    const handleCloseMainChat = () => {
+        setIsMainChatOpen(false);
+    };
+
+    const handleMinimizeMainChat = () => {
+        setIsMainChatOpen(false);
+    };
+
+    const handleOpenChat = (user: User) => {
+        openChatWindow(user);
+        setIsMainChatOpen(false);
+    };
+
+    const handleStartRandomChat = () => {
+        setRandomChatEnabled(true);
+        setIsMainChatOpen(false);
+    };
+
+  const handleAcceptInvitation = (invitationId: string) => {
+    const invitation = randomInvitations.find(inv => inv.id === invitationId);
+    if (invitation) {
+      // Open chat window for accepted invitation
+      openChatWindow(invitation.user);
+      
+      // Remove invitation
+      setRandomInvitations(prev => prev.filter(inv => inv.id !== invitationId));
+    }
+  };
+
+  const handleDeclineInvitation = (invitationId: string) => {
+    setRandomInvitations(prev => prev.filter(inv => inv.id !== invitationId));
+  };
   
   const currentUser = users.length > 0 ? users[users.length - 1] : null;
 
@@ -104,8 +215,22 @@ export const DatingSwipe: React.FC = () => {
 
   return (
     <div className="flex-grow flex flex-col items-center justify-center p-4 bg-gray-200 dark:bg-gray-900 overflow-hidden relative animate-fade-in">
-        <div className="absolute top-4 left-4 right-4 z-20 flex justify-end">
-             <button onClick={() => setShowFilters(!showFilters)} className="p-2 rounded-full bg-white/50 dark:bg-black/50 backdrop-blur-sm shadow-md text-neon-purple">
+        <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-center">
+            {/* Random Chat Toggle */}
+            <div className="flex items-center space-x-3">
+                <label className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        checked={randomChatEnabled}
+                        onChange={(e) => setRandomChatEnabled(e.target.checked)}
+                        className="w-5 h-5 text-neon-purple bg-gray-100 border-gray-300 rounded focus:ring-neon-purple focus:ring-2"
+                    />
+                    <span className="text-sm font-medium text-white">Random Chat</span>
+                </label>
+            </div>
+            
+            {/* Filter Button */}
+            <button onClick={() => setShowFilters(!showFilters)} className="p-2 rounded-full bg-white/50 dark:bg-black/50 backdrop-blur-sm shadow-md text-neon-purple">
                 <FilterIcon />
             </button>
         </div>
@@ -166,6 +291,92 @@ export const DatingSwipe: React.FC = () => {
       </div>
       
       {showSignUp && <SignUpForm onClose={() => setShowSignUp(false)} />}
+
+      {/* Random Chat Invitation Modals */}
+      {randomInvitations.map(invitation => (
+        <div key={invitation.id} className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+            <div className="text-center">
+              <img 
+                src={invitation.user.image} 
+                alt={invitation.user.name} 
+                className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
+              />
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                {invitation.user.name}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-1">
+                {invitation.user.occupation} • {invitation.user.age} years old
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-500 mb-6">
+                {invitation.user.marriageGoals || 'Looking for a meaningful connection'}
+              </p>
+              
+              <div className="flex space-x-3 justify-center mb-4">
+                <button className="flex items-center space-x-2 px-4 py-2 bg-neon-purple text-white rounded-lg hover:bg-purple-600 transition-colors">
+                  <MessageIcon />
+                  <span>Chat</span>
+                </button>
+                <button className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                  <PhoneIcon />
+                  <span>Call</span>
+                </button>
+                <button className="flex items-center space-x-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                  <VideoIcon />
+                  <span>Video</span>
+                </button>
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => handleAcceptInvitation(invitation.id)}
+                  className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                >
+                  <span>Accept</span>
+                </button>
+                <button
+                  onClick={() => handleDeclineInvitation(invitation.id)}
+                  className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  <span>Decline</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {/* Chat Windows - Fixed to bottom-right */}
+      {chatWindows.map((chatWindow, index) => (
+        <ChatWindow
+          key={chatWindow.id}
+          chatWindow={chatWindow}
+          onMinimize={handleMinimize}
+          onMaximize={handleMaximize}
+          onClose={handleClose}
+          onSendMessage={handleSendMessage}
+          isFixed={true}
+          position={{ 
+            x: chatWindow.isMinimized ? 20 + (index * 270) : 20 + (index * 370), 
+            y: 0 
+          }}
+        />
+      ))}
+
+      {/* Main Chat Window */}
+      <MainChatWindow
+        isOpen={isMainChatOpen}
+        onMinimize={handleMinimizeMainChat}
+        onClose={handleCloseMainChat}
+        onOpenChat={handleOpenChat}
+        onStartRandomChat={handleStartRandomChat}
+      />
+
+      {/* Default Chat Button - Always visible */}
+      <DefaultChatButton
+        onClick={handleOpenMainChat}
+        hasUnreadMessages={randomInvitations.length > 0}
+      />
     </div>
   );
 };

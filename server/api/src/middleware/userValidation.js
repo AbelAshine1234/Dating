@@ -34,22 +34,35 @@ const registerSchema = Joi.object({
 }).unknown(true);
 
 function validateRegister(req, res, next) {
-  // Check files manually (multer must run before this middleware)
+  // --- File validation ---
   if (!req.files || req.files.length === 0) {
-    return res.status(400).json({ error: 'At least one profile image is required' });
+    return res.status(400).json({ error: "At least one profile image is required" });
   }
 
-  // Normalize interests if sent as comma-separated string
-  if (typeof req.body.interests === 'string') {
-    req.body.interests = req.body.interests.split(',').map(s => s.trim());
+  // Allowed mime types (only images)
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  const maxSize = 2 * 1024 * 1024; // 2 MB
+
+  for (const file of req.files) {
+    if (!allowedTypes.includes(file.mimetype)) {
+      return res.status(400).json({ error: `Invalid file type: ${file.originalname}` });
+    }
+    if (file.size > maxSize) {
+      return res.status(400).json({ error: `File too large: ${file.originalname} (max 2MB)` });
+    }
   }
 
-  // Validate req.body fields with Joi
+  // --- Normalize fields ---
+  if (typeof req.body.interests === "string") {
+    req.body.interests = req.body.interests.split(",").map(s => s.trim());
+  }
+
+  // --- Joi validation ---
   const { error } = registerSchema.validate(req.body, { abortEarly: false });
   if (error) {
     const errors = error.details.map(err => ({
       msg: err.message,
-      path: err.path.join('.'),
+      path: err.path.join("."),
     }));
     return res.status(400).json({ errors });
   }

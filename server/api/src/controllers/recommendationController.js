@@ -1,21 +1,32 @@
 const { Op, literal } = require('sequelize');
-const User = require('../models/User');
+const { User, Picture } = require('../models');
 
 exports.getRecommendations = async (req, res) => {
   try {
-    const { gender, purpose, interests = [] } = req.body;
+    const currentUserId = req.user?.id;
+    const { interests = [] } = req.body || {};
 
-    if (!gender || !purpose) {
-      return res.status(400).json({ error: 'gender and purpose are required' });
+    if (!currentUserId) {
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Base filter on gender and purpose
-    const baseFilter = {
-      gender,
-      lookingFor: purpose,
-    };
+    const currentUser = await User.findByPk(currentUserId, { attributes: ['id', 'gender', 'lookingFor', 'interests'] });
+    if (!currentUser) {
+      return res.status(404).json({ error: 'Current user not found' });
+    }
 
-    // Find all matching users first
+    // Determine opposite gender
+    let targetGender;
+    const g = String(currentUser.gender || '').toLowerCase();
+    if (g === 'male') targetGender = 'female';
+    else if (g === 'female') targetGender = 'male';
+
+    const baseFilter = {
+      id: { [Op.ne]: currentUserId },
+      lookingFor: currentUser.lookingFor,
+    };
+    if (targetGender) baseFilter.gender = targetGender;
+
     let users = await User.findAll({
       where: baseFilter,
       attributes: [
@@ -27,31 +38,20 @@ exports.getRecommendations = async (req, res) => {
         'description',
         'interests',
       ],
-      // Randomize results
+      include: [{ model: Picture, attributes: ['url', 'publicId'] }],
       order: literal('RANDOM()'),
-      limit: 100, // Get more to apply scoring then limit later
+      limit: 100,
     });
 
-    // Recommendation logic: score users based on shared interests
-    // If no interests provided, skip scoring
-    if (interests.length > 0) {
-      users = users.map(user => {
-        const sharedInterests = user.interests
-          ? user.interests.filter(i => interests.includes(i))
-          : [];
-        return {
-          ...user.get({ plain: true }),
-          score: sharedInterests.length,
-        };
-      });
+    const seedInterests = Array.isArray(interests) && interests.length > 0 ? interests : (currentUser.interests || []);
 
-      // Sort by score desc and limit to 20
-      users = users
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 20);
+    if (seedInterests.length > 0) {
+      users = users.map(user => {
+        const sharedInterests = user.interests ? user.interests.filter(i => seedInterests.includes(i)) : [];
+        return { ...user.get({ plain: true }), score: sharedInterests.length };
+      }).sort((a, b) => b.score - a.score).slice(0, 20);
     } else {
-      // If no interests filter, just limit to 20 random
-      users = users.slice(0, 20);
+      users = users.map(user => user.get({ plain: true })).slice(0, 20);
     }
 
     res.json({ users });
