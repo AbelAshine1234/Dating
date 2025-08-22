@@ -36,3 +36,11 @@ export const RefreshCcwIcon = () => <svg {...iconProps} xmlns="http://www.w3.org
 
 // Filter Icon
 export const FilterIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg>;
+
+// Chat Enhancement Icons
+export const MinimizeIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" /></svg>;
+export const MaximizeIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16h3a2 2 0 0 1 2 2v3m18-3v3a2 2 0 0 1-2 2h-3" /></svg>;
+export const CloseIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12" /></svg>;
+export const RandomIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16.466 7.5C15.643 4.338 13.25 2 10.5 2 6.91 2 4 4.91 4 8.5s2.91 6.5 6.5 6.5c2.75 0 5.143-2.338 5.966-5.5H22V7.5h-5.534z" /><path d="M7.534 16.5C8.357 19.662 10.75 22 13.5 22c3.59 0 6.5-2.91 6.5-6.5s-2.91-6.5-6.5-6.5c-2.75 0-5.143 2.338-5.966 5.5H2v3h5.534z" /></svg>;
+export const CheckIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20,6 9,17 4,12" /></svg>;
+export const XCircleIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>;
