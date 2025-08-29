@@ -76,11 +76,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     if (chatWindow.isMinimized) {
         return (
             <div
-                className={`${isFixed ? 'fixed' : 'absolute'} bottom-4 bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 cursor-pointer z-50 transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105`}
+                className="fixed bottom-4 bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 cursor-pointer z-50 transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105"
                 style={{ 
-                    left: isFixed ? position.x : position.x, 
-                    right: isFixed ? 'auto' : 'auto',
-                    top: isFixed ? 'auto' : position.y,
+                    left: position.x,
+                    bottom: '20px',
                     width: '250px',
                     height: '50px'
                 }}
@@ -113,11 +112,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
     return (
         <div
-            className={`${isFixed ? 'fixed' : 'absolute'} bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 transition-all duration-300 ease-in-out hover:shadow-2xl transform origin-bottom-right`}
+            className={`fixed bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 transition-all duration-300 ease-in-out hover:shadow-2xl transform origin-bottom-right`}
             style={{ 
-                left: isFixed ? position.x : position.x, 
-                right: isFixed ? 'auto' : 'auto',
-                bottom: isFixed ? '80px' : position.y,
+                left: position.x,
+                top: position.y,
                 width: '350px',
                 height: '500px'
             }}

@@ -44,3 +44,6 @@ export const CloseIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/2000
 export const RandomIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16.466 7.5C15.643 4.338 13.25 2 10.5 2 6.91 2 4 4.91 4 8.5s2.91 6.5 6.5 6.5c2.75 0 5.143-2.338 5.966-5.5H22V7.5h-5.534z" /><path d="M7.534 16.5C8.357 19.662 10.75 22 13.5 22c3.59 0 6.5-2.91 6.5-6.5s-2.91-6.5-6.5-6.5c-2.75 0-5.143 2.338-5.966 5.5H2v3h5.534z" /></svg>;
 export const CheckIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20,6 9,17 4,12" /></svg>;
 export const XCircleIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>;
+
+// Search Icon
+export const SearchIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>;

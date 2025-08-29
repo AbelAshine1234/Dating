@@ -7,7 +7,8 @@ import {
     SmileIcon, 
     SendIcon, 
     ArrowLeftIcon,
-    RandomIcon
+    RandomIcon,
+    SearchIcon
 } from '../constants';
 import { ChatWindow, ChatWindowData, RandomChatInvitation } from '../components/ChatWindow';
 import { MainChatWindow } from '../components/MainChatWindow';
@@ -23,7 +24,7 @@ const ChatListItem: React.FC<{ chat: ChatPreview; isActive: boolean; onClick: ()
     <div
         onClick={onClick}
         className={`flex items-center p-3 cursor-pointer rounded-lg transition-colors duration-200 ${
-            isActive ? 'bg-neon-purple/20 dark:bg-neon-purple/30' : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+            isActive ? 'bg-neon-purple/20 dark:bg-neon-purple/30 border-l-4 border-neon-purple' : 'hover:bg-gray-100 dark:hover:bg-gray-700'
         }`}
     >
         <div className="relative mr-4">
@@ -47,16 +48,156 @@ const ChatListItem: React.FC<{ chat: ChatPreview; isActive: boolean; onClick: ()
     </div>
 );
 
+const ConversationView: React.FC<{ chatRoom: ChatRoomData | null; onSendMessage: (message: string) => void }> = ({ chatRoom, onSendMessage }) => {
+    const [newMessage, setNewMessage] = useState('');
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [chatRoom?.messages]);
+
+    const handleSendMessage = () => {
+        if (newMessage.trim() && chatRoom) {
+            onSendMessage(newMessage);
+            setNewMessage('');
+        }
+    };
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    };
+
+    if (!chatRoom) {
+        return (
+            <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-800">
+                <div className="text-center">
+                    <div className="w-24 h-24 mx-auto mb-4 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                        <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">Select a chat</h3>
+                    <p className="text-gray-500 dark:text-gray-500">Choose a conversation from the list to start messaging</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex-1 flex flex-col bg-white dark:bg-gray-900">
+            {/* Chat Header */}
+            <div className="flex items-center p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <div className="flex items-center space-x-3">
+                    <img
+                        src={chatRoom.user.image}
+                        alt={chatRoom.user.name}
+                        className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div>
+                        <h2 className="font-bold font-heading text-gray-800 dark:text-white">
+                            {chatRoom.user.name}
+                        </h2>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Online
+                        </p>
+                    </div>
+                </div>
+                <div className="ml-auto flex space-x-2">
+                    <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                        <PhoneIcon />
+                    </button>
+                    <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                        <VideoIcon />
+                    </button>
+                </div>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-50 dark:bg-gray-800">
+                {chatRoom.messages.map((message) => (
+                    <div
+                        key={message.id}
+                        className={`flex ${message.senderId === currentUser.id ? 'justify-end' : 'justify-start'}`}
+                    >
+                        <div
+                            className={`max-w-xs px-4 py-2 rounded-lg ${
+                                message.senderId === currentUser.id
+                                    ? 'bg-neon-purple text-white'
+                                    : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm'
+                            }`}
+                        >
+                            <p>{message.text}</p>
+                        </div>
+                    </div>
+                ))}
+                <div ref={messagesEndRef} />
+            </div>
+
+            {/* Message Input */}
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <div className="flex items-center space-x-3">
+                    <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                        <SmileIcon />
+                    </button>
+                    <input
+                        type="text"
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Type a message..."
+                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-neon-purple focus:border-transparent"
+                    />
+                    <button 
+                        onClick={handleSendMessage}
+                        className="p-2 bg-neon-purple text-white rounded-lg hover:bg-purple-600 transition-colors"
+                    >
+                        <SendIcon />
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export const Chat: React.FC = () => {
     const [activeChatId, setActiveChatId] = useState<number | null>(sampleChatPreviews[0]?.id || null);
-    const [isChatRoomVisible, setChatRoomVisible] = useState(false);
     const [randomChatEnabled, setRandomChatEnabled] = useState(false);
     const [chatWindows, setChatWindows] = useState<EnhancedChatWindow[]>([]);
     const [randomInvitations, setRandomInvitations] = useState<RandomChatInvitation[]>([]);
-    const [nextWindowPosition, setNextWindowPosition] = useState({ x: 20, y: 20 });
+
     const [isMainChatOpen, setIsMainChatOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
     
     const activeChatRoom = sampleChatRooms.find(cr => cr.id === activeChatId);
+    const filteredChats = sampleChatPreviews.filter(chat =>
+        chat.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        chat.lastMessage.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Calculate position for new chat windows - LinkedIn style positioning
+    const calculateChatWindowPosition = (isMinimized: boolean = false) => {
+        if (isMinimized) {
+            // For minimized chats: position in left lower corner, side by side
+            const minimizedCount = chatWindows.filter(cw => cw.isMinimized).length;
+            const minimizedWidth = 250; // Width of minimized chat
+            const spacing = 10; // Space between minimized chats
+            
+            return {
+                x: 20 + (minimizedCount * (minimizedWidth + spacing)),
+                y: window.innerHeight - 100 // 100px from bottom
+            };
+        } else {
+            // For expanded chats: position in center-right area
+            const expandedCount = chatWindows.filter(cw => !cw.isMinimized).length;
+            return {
+                x: window.innerWidth - 400 - (expandedCount * 20), // 400px from right edge
+                y: 100 + (expandedCount * 20) // 100px from top
+            };
+        }
+    };
 
     // Add custom styles for animations
     useEffect(() => {
@@ -82,6 +223,38 @@ export const Chat: React.FC = () => {
         return () => {
             document.head.removeChild(style);
         };
+    }, []);
+
+    // Handle window resize to reposition chat windows
+    useEffect(() => {
+        const handleResize = () => {
+            setChatWindows(prev => {
+                const updated = [...prev];
+                
+                // Reposition minimized chats
+                const minimizedChats = updated.filter(cw => cw.isMinimized);
+                minimizedChats.forEach((chat, index) => {
+                    chat.position = {
+                        x: 20 + (index * (250 + 10)),
+                        y: window.innerHeight - 100
+                    };
+                });
+                
+                // Reposition expanded chats
+                const expandedChats = updated.filter(cw => !cw.isMinimized);
+                expandedChats.forEach((chat, index) => {
+                    chat.position = {
+                        x: window.innerWidth - 400 - (index * 20),
+                        y: 100 + (index * 20)
+                    };
+                });
+                
+                return updated;
+            });
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     // Generate random chat invitations
@@ -113,17 +286,6 @@ export const Chat: React.FC = () => {
 
     const handleSelectChat = (id: number) => {
         setActiveChatId(id);
-        setChatRoomVisible(true);
-        
-        // Open chat window
-        const chatRoom = sampleChatRooms.find(cr => cr.id === id);
-        if (chatRoom) {
-            openChatWindow(chatRoom.user, chatRoom.messages);
-        }
-    };
-
-    const handleBackToList = () => {
-        setChatRoomVisible(false);
     };
 
     const openChatWindow = (user: User, messages?: Message[]) => {
@@ -133,35 +295,66 @@ export const Chat: React.FC = () => {
             user,
             messages: messages || [],
             isMinimized: false,
-            position: nextWindowPosition,
+            position: calculateChatWindowPosition(false), // Default to expanded position
             isDragging: false
         };
         
         setChatWindows(prev => [...prev, newWindow]);
-        setNextWindowPosition(prev => ({ 
-            x: prev.x + 20, 
-            y: prev.y + 20 
-        }));
     };
 
     const handleMinimize = (id: string) => {
-        setChatWindows(prev => 
-            prev.map(cw => 
-                cw.id === id ? { ...cw, isMinimized: true } : cw
-            )
-        );
+        setChatWindows(prev => {
+            const updated = prev.map(cw => 
+                cw.id === id ? { ...cw, isMinimized: true, position: calculateChatWindowPosition(true) } : cw
+            );
+            
+            // Reposition all minimized chats to be side by side
+            const minimizedChats = updated.filter(cw => cw.isMinimized);
+            minimizedChats.forEach((chat, index) => {
+                chat.position = {
+                    x: 20 + (index * (250 + 10)), // 250px width + 10px spacing
+                    y: window.innerHeight - 100
+                };
+            });
+            
+            return updated;
+        });
     };
 
     const handleMaximize = (id: string) => {
-        setChatWindows(prev => 
-            prev.map(cw => 
-                cw.id === id ? { ...cw, isMinimized: false } : cw
-            )
-        );
+        setChatWindows(prev => {
+            const updated = prev.map(cw => 
+                cw.id === id ? { ...cw, isMinimized: false, position: calculateChatWindowPosition(false) } : cw
+            );
+            
+            // Reposition remaining minimized chats
+            const minimizedChats = updated.filter(cw => cw.isMinimized);
+            minimizedChats.forEach((chat, index) => {
+                chat.position = {
+                    x: 20 + (index * (250 + 10)),
+                    y: window.innerHeight - 100
+                };
+            });
+            
+            return updated;
+        });
     };
 
     const handleClose = (id: string) => {
-        setChatWindows(prev => prev.filter(cw => cw.id !== id));
+        setChatWindows(prev => {
+            const remaining = prev.filter(cw => cw.id !== id);
+            
+            // Reposition remaining minimized chats
+            const minimizedChats = remaining.filter(cw => cw.isMinimized);
+            minimizedChats.forEach((chat, index) => {
+                chat.position = {
+                    x: 20 + (index * (250 + 10)),
+                    y: window.innerHeight - 100
+                };
+            });
+            
+            return remaining;
+        });
     };
 
     const handlePositionChange = (id: string, position: { x: number; y: number }) => {
@@ -215,104 +408,12 @@ export const Chat: React.FC = () => {
         setIsMainChatOpen(false);
     };
 
-    if (isChatRoomVisible && activeChatRoom) {
-        return (
-            <div className="flex-grow flex flex-col bg-white dark:bg-gray-900 animate-fade-in">
-                {/* Chat Room Header */}
-                <div className="flex items-center p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                    <button
-                        onClick={handleBackToList}
-                        className="mr-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                    >
-                        <ArrowLeftIcon />
-                    </button>
-                    <div className="flex items-center space-x-3">
-                        <img
-                            src={activeChatRoom.user.image}
-                            alt={activeChatRoom.user.name}
-                            className="w-10 h-10 rounded-full object-cover"
-                        />
-                        <div>
-                            <h2 className="font-bold font-heading text-gray-800 dark:text-white">
-                                {activeChatRoom.user.name}
-                            </h2>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Online
-                            </p>
-                        </div>
-                    </div>
-                    <div className="ml-auto flex space-x-2">
-                        <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                            <PhoneIcon />
-                        </button>
-                        <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                            <VideoIcon />
-                        </button>
-                    </div>
-                </div>
-
-                {/* Chat Messages */}
-                <div className="flex-1 p-4 overflow-y-auto space-y-4">
-                    {activeChatRoom.messages.map((message) => (
-                        <div
-                            key={message.id}
-                            className={`flex ${message.senderId === currentUser.id ? 'justify-end' : 'justify-start'}`}
-                        >
-                            <div
-                                className={`max-w-xs px-4 py-2 rounded-lg ${
-                                    message.senderId === currentUser.id
-                                        ? 'bg-neon-purple text-white'
-                                        : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-                                }`}
-                            >
-                                <p>{message.text}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Message Input */}
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                    <div className="flex items-center space-x-3">
-                        <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                            <SmileIcon />
-                        </button>
-                        <input
-                            type="text"
-                            placeholder="Type a message..."
-                            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-neon-purple focus:border-transparent"
-                        />
-                        <button className="p-2 bg-neon-purple text-white rounded-lg hover:bg-purple-600 transition-colors">
-                            <SendIcon />
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="flex-grow flex flex-col bg-white dark:bg-gray-900 animate-fade-in">
             {/* Header */}
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                 <h1 className="text-3xl font-bold font-heading text-gray-800 dark:text-white">Messages</h1>
                 <p className="text-gray-600 dark:text-gray-400 mt-2">Connect with your matches</p>
-            </div>
-
-            {/* Search Bar */}
-            <div className="px-6 mb-4">
-                <div className="relative">
-                    <input
-                        type="text"
-                        placeholder="Search chats..."
-                        className="w-full px-4 py-2 pl-10 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-200 placeholder-gray-500 focus:ring-2 focus:ring-neon-purple focus:border-transparent transition-all duration-200"
-                    />
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                </div>
             </div>
 
             {/* Random Chat Toggle */}
@@ -329,17 +430,47 @@ export const Chat: React.FC = () => {
                 </label>
             </div>
 
-            {/* Chat List */}
-            <div className="flex-1 overflow-y-auto px-6">
-                <div className="space-y-2">
-                    {sampleChatPreviews.map((chat) => (
-                        <ChatListItem
-                            key={chat.id}
-                            chat={chat}
-                            isActive={chat.id === activeChatId}
-                            onClick={() => handleSelectChat(chat.id)}
-                        />
-                    ))}
+            {/* Main Chat Interface - Split Layout */}
+            <div className="flex-1 flex border-t border-gray-200 dark:border-gray-700">
+                {/* Left Side - Chat List */}
+                <div className="w-80 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                    {/* Search Bar */}
+                    <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Search chats..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full px-4 py-2 pl-10 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-200 placeholder-gray-500 focus:ring-2 focus:ring-neon-purple focus:border-transparent transition-all duration-200"
+                            />
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <SearchIcon />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Chat List */}
+                    <div className="flex-1 overflow-y-auto" style={{ height: 'calc(100vh - 300px)' }}>
+                        <div className="space-y-1 p-2">
+                            {filteredChats.map((chat) => (
+                                <ChatListItem
+                                    key={chat.id}
+                                    chat={chat}
+                                    isActive={chat.id === activeChatId}
+                                    onClick={() => handleSelectChat(chat.id)}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Side - Conversation */}
+                <div className="flex-1">
+                    <ConversationView 
+                        chatRoom={activeChatRoom || null}
+                        onSendMessage={handleSendMessage}
+                    />
                 </div>
             </div>
 
