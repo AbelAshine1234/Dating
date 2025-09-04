@@ -21,6 +21,7 @@ export const RefreshCwIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/
 export const CreditCardIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>;
 export const RingIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21a9 9 0 00-9-9 9 9 0 009-9 9 9 0 100 18z"/><path d="M12 12a3 3 0 100-6 3 3 0 000 6z"/><path d="M12 2a4 4 0 00-4 4h8a4 4 0 00-4-4z"/></svg>;
 export const ArrowLeftIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 12H5m7 7-7-7 7-7"/></svg>;
+export const LogoutIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>;
 
 // Home Page Icons
 export const ConnectIcon = () => <svg {...iconProps} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8a4 4 0 10-8 0 4 4 0 008 0zM6 16a4 4 0 108 0 4 4 0 00-8 0zM12.5 13.5L18 11" /><path d="M6.5 8.5L12 11" /></svg>;

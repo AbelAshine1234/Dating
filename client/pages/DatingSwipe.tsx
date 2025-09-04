@@ -2,6 +2,10 @@ import React, { useState, useContext, useCallback, useMemo, useEffect } from 're
 import { useNavigate } from 'react-router-dom';
 import { sampleUsers, filterData, currentUser } from '../data/sampleData';
 import { User, NotificationType, Message } from '../types';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
+import { fetchRecommendations } from '../api/recommendations';
+import { getConversation, sendMessage } from '../api/chat';
 import { SwipeCard } from '../components/SwipeCard';
 import { NotificationContext } from '../context/NotificationContext';
 import { HeartIcon, XIcon, PhoneIcon, VideoIcon, MessageIcon, RefreshCwIcon, FilterIcon } from '../constants';
@@ -15,37 +19,7 @@ const ActionButton: React.FC<{ onClick: () => void; children: React.ReactNode; c
   </button>
 );
 
-const SignUpForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-    const navigate = useNavigate();
-
-    const handleSignup = (e: React.FormEvent) => {
-        e.preventDefault();
-        navigate('/profile-completion');
-    };
-    
-    return (
-    <div className="absolute bottom-24 right-4 md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:right-8 bg-white/20 dark:bg-black/30 backdrop-blur-lg p-6 rounded-2xl shadow-2xl w-80 z-20 animate-fade-in border border-white/20">
-        <button onClick={onClose} className="absolute top-2 right-3 text-white text-2xl">&times;</button>
-        <h3 className="text-2xl font-bold font-heading text-white mb-4 text-center">Sign Up Now!</h3>
-        <form onSubmit={handleSignup} className="space-y-3">
-            <input type="text" placeholder="Name" required className="w-full bg-white/30 text-white placeholder-gray-300 p-2 rounded-md border-0 focus:ring-2 focus:ring-neon-magenta" />
-            <input type="email" placeholder="Email" required className="w-full bg-white/30 text-white placeholder-gray-300 p-2 rounded-md border-0 focus:ring-2 focus:ring-neon-magenta" />
-            <input type="password" placeholder="Password" required className="w-full bg-white/30 text-white placeholder-gray-300 p-2 rounded-md border-0 focus:ring-2 focus:ring-neon-magenta" />
-            <div className="flex gap-2">
-                <select required className="w-full bg-white/30 text-white p-2 rounded-md border-0 focus:ring-2 focus:ring-neon-magenta appearance-none text-center custom-select">
-                    <option value="" className="text-gray-500">Gender</option>
-                    <option value="male" className="text-black">Male</option>
-                    <option value="female" className="text-black">Female</option>
-                    <option value="other" className="text-black">Other</option>
-                </select>
-                <input type="number" placeholder="Age" required className="w-full bg-white/30 text-white placeholder-gray-300 p-2 rounded-md border-0 focus:ring-2 focus:ring-neon-magenta" />
-            </div>
-            <button type="submit" className="w-full py-2 bg-gradient-to-r from-neon-magenta to-neon-purple text-white font-bold rounded-md hover:scale-105 transition-transform">
-                Create Account
-            </button>
-        </form>
-    </div>
-)};
+ 
 
 export const DatingSwipe: React.FC = () => {
   const [showSignUp, setShowSignUp] = useState(true);
@@ -55,6 +29,8 @@ export const DatingSwipe: React.FC = () => {
   const [selectedReligion, setSelectedReligion] = useState('');
   const [selectedCaste, setSelectedCaste] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   // Chat system state
   const [chatWindows, setChatWindows] = useState<ChatWindowData[]>([]);
@@ -62,8 +38,10 @@ export const DatingSwipe: React.FC = () => {
   const [randomChatEnabled, setRandomChatEnabled] = useState(false);
   const [isMainChatOpen, setIsMainChatOpen] = useState(false);
 
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+
   const filteredUsers = useMemo(() => {
-    let users = sampleUsers;
+    let users = allUsers;
     if (selectedReligion && selectedReligion !== 'all') {
       users = users.filter(u => u.religion === selectedReligion);
     }
@@ -71,12 +49,13 @@ export const DatingSwipe: React.FC = () => {
       users = users.filter(u => u.caste === selectedCaste);
     }
     return users;
-  }, [selectedReligion, selectedCaste]);
+  }, [selectedReligion, selectedCaste, allUsers]);
   
   const [users, setUsers] = useState<User[]>(filteredUsers.slice(0, 5));
   
   const notificationContext = useContext(NotificationContext);
   const navigate = useNavigate();
+  const token = useSelector((state: RootState) => state.auth.token);
 
   const removeTopCard = useCallback((direction: 'left' | 'right') => {
     const swipedUser = users[users.length - 1];
@@ -103,6 +82,37 @@ export const DatingSwipe: React.FC = () => {
   React.useEffect(() => {
     resetDeck();
   }, [filteredUsers, resetDeck]);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!token) {
+        navigate('/signin');
+        return;
+      }
+      try {
+        setLoading(true);
+        setError('');
+        const res = await fetchRecommendations(token, 'dating');
+        const mapped: User[] = res.users.map((u) => ({
+          id: u.id,
+          name: u.fullName || 'User',
+          age: u.dateOfBirth ? Math.max(0, Math.floor((Date.now() - new Date(u.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))) : 0,
+          image: (u as any)?.Pictures?.[0]?.url || (u as any)?.pictures?.[0]?.url || 'https://picsum.photos/400',
+          religion: (u as any)?.religion,
+          caste: (u as any)?.caste,
+          occupation: (u as any)?.occupation,
+          location: undefined,
+          marriageGoals: undefined,
+        }));
+        setAllUsers(mapped);
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load recommendations');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [token, navigate]);
 
   // Generate random chat invitations
   useEffect(() => {
@@ -213,6 +223,25 @@ export const DatingSwipe: React.FC = () => {
       setSelectedCaste(''); // Reset caste when religion changes
   }
 
+  const handleChatIconClick = useCallback(async () => {
+    if (!currentUser) return;
+    if (!token) {
+      navigate('/signin');
+      return;
+    }
+    try {
+      const existing = await getConversation(token, currentUser.id);
+      if (!existing || existing.length === 0) {
+        await sendMessage(token, currentUser.id, 'Hi 👋');
+      }
+    } catch (err) {
+      // Proceed to chat page regardless; errors will be surfaced there
+      console.error('Failed to create or fetch conversation:', err);
+    } finally {
+      navigate(`/chat/${currentUser.id}`);
+    }
+  }, [currentUser, token, navigate]);
+
   return (
     <div className="flex-grow flex flex-col items-center justify-center p-4 bg-gray-200 dark:bg-gray-900 overflow-hidden relative animate-fade-in">
         <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-center">
@@ -252,6 +281,14 @@ export const DatingSwipe: React.FC = () => {
         )}
 
         <div className="relative w-full max-w-sm h-[70vh] max-h-[600px] flex items-center justify-center">
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="h-12 w-12 border-4 border-neon-purple border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+        {error && (
+          <div className="absolute top-2 left-2 right-2 text-center text-red-600 text-sm">{error}</div>
+        )}
         {users.length > 0 ? (
           users.map((user, index) => {
             const isTop = index === users.length - 1;
@@ -267,7 +304,9 @@ export const DatingSwipe: React.FC = () => {
                 className={`absolute w-full h-full swipe-card-transition ${isTop ? swipedClasses : ''}`}
                 style={isTop ? { zIndex: index } : style}
               >
-                <SwipeCard user={user} isTop={isTop} style={{}} overlay={isTop ? overlay : null}/>
+                <div onClick={() => navigate(`/user/${user.id}`)} className="cursor-pointer">
+                  <SwipeCard user={user} isTop={isTop} style={{}} overlay={isTop ? overlay : null}/>
+                </div>
               </div>
             );
           })
@@ -284,13 +323,12 @@ export const DatingSwipe: React.FC = () => {
 
       <div className="flex items-center justify-center space-x-2 md:space-x-4 mt-6 z-10">
         <ActionButton onClick={() => handleSwipe('left')} className="bg-white shadow-lg text-red-500 hover:bg-red-100"><XIcon /></ActionButton>
-        <ActionButton onClick={() => navigate('/chat')} className="bg-white shadow-lg text-blue-500 hover:bg-blue-100"><MessageIcon /></ActionButton>
+        <ActionButton onClick={handleChatIconClick} className="bg-white shadow-lg text-blue-500 hover:bg-blue-100"><MessageIcon /></ActionButton>
         <ActionButton onClick={() => currentUser && navigate(`/call/${currentUser.id}?type=voice`)} className="bg-white shadow-lg text-green-500 hover:bg-green-100"><PhoneIcon /></ActionButton>
         <ActionButton onClick={() => handleSwipe('right')} className="bg-gradient-to-r from-neon-magenta to-neon-purple shadow-xl text-white"><HeartIcon /></ActionButton>
         <ActionButton onClick={() => currentUser && navigate(`/call/${currentUser.id}?type=video`)} className="bg-white shadow-lg text-purple-500 hover:bg-purple-100"><VideoIcon /></ActionButton>
       </div>
       
-      {showSignUp && <SignUpForm onClose={() => setShowSignUp(false)} />}
 
       {/* Random Chat Invitation Modals */}
       {randomInvitations.map(invitation => (

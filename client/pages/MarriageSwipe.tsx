@@ -2,6 +2,9 @@ import React, { useState, useCallback, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { sampleUsers, currentUser } from '../data/sampleData';
 import { User, NotificationType, Message } from '../types';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
+import { fetchRecommendations } from '../api/recommendations';
 import { SwipeCard } from '../components/SwipeCard';
 import { NotificationContext } from '../context/NotificationContext';
 import { HeartIcon, XIcon, RefreshCwIcon, MessageIcon, PhoneIcon, VideoIcon } from '../constants';
@@ -9,26 +12,16 @@ import { ChatWindow, ChatWindowData, RandomChatInvitation } from '../components/
 import { MainChatWindow } from '../components/MainChatWindow';
 import { DefaultChatButton } from '../components/DefaultChatButton';
 
-const MarriageRegistrationPanel: React.FC = () => (
-    <div className="w-full md:w-1/3 lg:w-1/4 p-8 bg-white/10 dark:bg-black/20 backdrop-blur-md rounded-2xl shadow-2xl h-full flex flex-col justify-center items-center text-center border border-white/20">
-        <h3 className="text-3xl font-bold font-heading text-gray-800 dark:text-white">Ready for Forever?</h3>
-        <p className="mt-4 text-gray-600 dark:text-gray-300">
-            Our marriage path is for serious applicants. Complete your detailed profile to begin connecting with others who share your goals.
-        </p>
-        <Link
-            to="/marriage-registration"
-            className="mt-8 w-full py-3 bg-gradient-to-r from-neon-purple to-indigo-500 text-white font-bold rounded-lg hover:scale-105 transition-transform shadow-lg hover:shadow-neon-purple/50"
-        >
-            Start Registration
-        </Link>
-    </div>
-);
+ 
 
 export const MarriageSwipe: React.FC = () => {
-    const [users, setUsers] = useState<User[]>(sampleUsers.filter(u => u.marriageGoals));
+    const [users, setUsers] = useState<User[]>([]);
     const [swipedClasses, setSwipedClasses] = useState<string>('');
     const notificationContext = useContext(NotificationContext);
     const navigate = useNavigate();
+    const token = useSelector((state: RootState) => state.auth.token);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     // Chat system state
     const [chatWindows, setChatWindows] = useState<ChatWindowData[]>([]);
@@ -57,8 +50,40 @@ export const MarriageSwipe: React.FC = () => {
     };
 
     const resetDeck = () => {
-        setUsers(sampleUsers.filter(u => u.marriageGoals));
+        // no-op when using backend list; users are already set
+        setUsers(prev => prev);
     };
+
+    useEffect(() => {
+        const load = async () => {
+            if (!token) {
+                navigate('/signin');
+                return;
+            }
+            try {
+                setLoading(true);
+                setError('');
+                const res = await fetchRecommendations(token, 'marriage');
+                const mapped: User[] = res.users.map((u: any) => ({
+                    id: u.id,
+                    name: u.fullName || 'User',
+                    age: u.dateOfBirth ? Math.max(0, Math.floor((Date.now() - new Date(u.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))) : 0,
+                    image: (u as any)?.Pictures?.[0]?.url || (u as any)?.pictures?.[0]?.url || 'https://picsum.photos/400',
+                    religion: u.religion,
+                    caste: u.caste,
+                    occupation: u.occupation,
+                    location: undefined,
+                    marriageGoals: u.marriageGoals,
+                }));
+                setUsers(mapped);
+            } catch (e: any) {
+                setError(e?.message || 'Failed to load recommendations');
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, [token, navigate]);
 
     // Generate random chat invitations
     useEffect(() => {
@@ -179,6 +204,14 @@ export const MarriageSwipe: React.FC = () => {
             
             <div className="w-full md:w-2/3 lg:w-3/4 flex flex-col items-center justify-center">
                 <div className="relative w-full max-w-md h-[70vh] max-h-[650px]">
+                    {loading && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="h-12 w-12 border-4 border-neon-purple border-t-transparent rounded-full animate-spin" />
+                        </div>
+                    )}
+                    {error && (
+                        <div className="absolute top-2 left-2 right-2 text-center text-red-600 text-sm">{error}</div>
+                    )}
                     {users.length > 0 ? (
                         users.map((user, index) => {
                             const isTop = index === users.length - 1;
@@ -193,7 +226,9 @@ export const MarriageSwipe: React.FC = () => {
                                     className={`absolute w-full h-full swipe-card-transition ${isTop ? swipedClasses : ''}`}
                                     style={cardStyle}
                                 >
-                                    <SwipeCard user={user} isTop={isTop} style={{}} />
+                                    <div onClick={() => navigate(`/user/${user.id}`)} className="cursor-pointer">
+                                        <SwipeCard user={user} isTop={isTop} style={{}} />
+                                    </div>
                                 </div>
                             );
                         })
@@ -211,7 +246,7 @@ export const MarriageSwipe: React.FC = () => {
                     <button onClick={() => handleSwipe('left')} className="p-5 rounded-full bg-white dark:bg-gray-700 shadow-lg text-gray-600 dark:text-gray-300 hover:scale-110 hover:text-red-500 transition-all duration-300">
                         <XIcon />
                     </button>
-                    <button onClick={() => navigate('/chat')} className="p-5 rounded-full bg-white dark:bg-gray-700 shadow-lg text-blue-500 hover:scale-110 hover:text-blue-600 transition-all duration-300">
+                    <button onClick={() => currentUser && navigate(`/chat/${currentUser.id}`)} className="p-5 rounded-full bg-white dark:bg-gray-700 shadow-lg text-blue-500 hover:scale-110 hover:text-blue-600 transition-all duration-300">
                         <MessageIcon />
                     </button>
                     <button onClick={() => handleSwipe('right')} className="p-7 rounded-full bg-gradient-to-br from-neon-purple to-indigo-600 shadow-xl text-white hover:scale-110 transition-transform duration-300">
@@ -219,7 +254,6 @@ export const MarriageSwipe: React.FC = () => {
                     </button>
                 </div>
             </div>
-            <MarriageRegistrationPanel />
 
             {/* Random Chat Invitation Modals */}
             {randomInvitations.map(invitation => (

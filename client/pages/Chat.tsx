@@ -1,5 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { sampleChatPreviews, sampleChatRooms, currentUser, sampleUsers } from '../data/sampleData';
+import { useNavigate, useParams } from 'react-router-dom';
+import { io, Socket } from 'socket.io-client';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
+import { getConversation, sendMessage, getUserChats } from '../api/chat';
+import { getUserById } from '../api/users';
+import { sampleChatRooms, currentUser, sampleUsers } from '../data/sampleData';
 import { ChatPreview, ChatRoomData, User, Message } from '../types';
 import { 
     PhoneIcon, 
@@ -48,7 +54,7 @@ const ChatListItem: React.FC<{ chat: ChatPreview; isActive: boolean; onClick: ()
     </div>
 );
 
-const ConversationView: React.FC<{ chatRoom: ChatRoomData | null; onSendMessage: (message: string) => void }> = ({ chatRoom, onSendMessage }) => {
+const ConversationView: React.FC<{ chatRoom: ChatRoomData | null; onSendMessage: (message: string) => void; currentUserId: number; onStartVoiceCall: (userId: number) => void; onStartVideoCall: (userId: number) => void }> = ({ chatRoom, onSendMessage, currentUserId, onStartVoiceCall, onStartVideoCall }) => {
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -106,10 +112,10 @@ const ConversationView: React.FC<{ chatRoom: ChatRoomData | null; onSendMessage:
                     </div>
                 </div>
                 <div className="ml-auto flex space-x-2">
-                    <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <button onClick={() => chatRoom && onStartVoiceCall(chatRoom.user.id)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                         <PhoneIcon />
                     </button>
-                    <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <button onClick={() => chatRoom && onStartVideoCall(chatRoom.user.id)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                         <VideoIcon />
                     </button>
                 </div>
@@ -120,11 +126,11 @@ const ConversationView: React.FC<{ chatRoom: ChatRoomData | null; onSendMessage:
                 {chatRoom.messages.map((message) => (
                     <div
                         key={message.id}
-                        className={`flex ${message.senderId === currentUser.id ? 'justify-end' : 'justify-start'}`}
+                        className={`flex ${message.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
                     >
                         <div
                             className={`max-w-xs px-4 py-2 rounded-lg ${
-                                message.senderId === currentUser.id
+                                message.senderId === currentUserId
                                     ? 'bg-neon-purple text-white'
                                     : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm'
                             }`}
@@ -163,19 +169,81 @@ const ConversationView: React.FC<{ chatRoom: ChatRoomData | null; onSendMessage:
 };
 
 export const Chat: React.FC = () => {
-    const [activeChatId, setActiveChatId] = useState<number | null>(sampleChatPreviews[0]?.id || null);
+    const { otherUserId } = useParams();
+    const navigate = useNavigate();
+    const token = useSelector((state: RootState) => state.auth.token);
+    const authUser = useSelector((state: RootState) => state.auth.user);
+    const [activeChatId, setActiveChatId] = useState<number | null>(null);
+    const [activeConversation, setActiveConversation] = useState<Message[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
     const [randomChatEnabled, setRandomChatEnabled] = useState(false);
     const [chatWindows, setChatWindows] = useState<EnhancedChatWindow[]>([]);
     const [randomInvitations, setRandomInvitations] = useState<RandomChatInvitation[]>([]);
 
     const [isMainChatOpen, setIsMainChatOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [chatList, setChatList] = useState<ChatPreview[]>([]);
+    const [socket, setSocket] = useState<Socket | null>(null);
+    const [incomingCall, setIncomingCall] = useState<{ from: number; name?: string } | null>(null);
     
-    const activeChatRoom = sampleChatRooms.find(cr => cr.id === activeChatId);
-    const filteredChats = sampleChatPreviews.filter(chat =>
+    const selectedUserId = otherUserId ? Number(otherUserId) : activeChatId;
+    const [selectedUserProfile, setSelectedUserProfile] = useState<any | null>(null);
+    const selectedFromList = selectedUserId
+        ? chatList.find(cr => cr.user.id === selectedUserId)
+        : undefined;
+    const activeChatRoom: ChatRoomData | null = selectedUserId
+        ? {
+            id: selectedUserId,
+            user: selectedUserProfile || selectedFromList?.user || {
+                id: selectedUserId,
+                name: selectedUserProfile?.fullName || selectedFromList?.user?.name || 'User',
+                image: (selectedUserProfile as any)?.Pictures?.[0]?.url || selectedFromList?.user?.image || 'https://picsum.photos/200',
+                age: selectedFromList?.user?.age || 0,
+            },
+            messages: activeConversation,
+        }
+        : null;
+    const filteredChats = chatList.filter(chat =>
         chat.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         chat.lastMessage.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    useEffect(() => {
+        const loadChats = async () => {
+            if (!token || !authUser?.id) return;
+            try {
+                const data = await getUserChats(token, Number(authUser.id));
+                const chats = (data.chats || []).map((c: any) => {
+                    const other = c.Sender?.id === authUser.id ? c.Receiver : c.Sender;
+                    return {
+                        id: other?.id,
+                        user: {
+                            id: other?.id,
+                            name: other?.fullName || 'User',
+                            image: other?.Pictures?.[0]?.url || 'https://picsum.photos/200',
+                            age: 0,
+                        },
+                        lastMessage: c.message,
+                        timestamp: new Date(c.createdAt).toLocaleString(),
+                        unreadCount: 0,
+                        isOnline: false,
+                    } as ChatPreview;
+                });
+                const latestByUser = new Map<number, ChatPreview>();
+                chats.forEach((ch: ChatPreview) => {
+                    const existing = latestByUser.get(ch.user.id);
+                    if (!existing || new Date(ch.timestamp) > new Date(existing.timestamp)) {
+                        latestByUser.set(ch.user.id, ch);
+                    }
+                });
+                setChatList(Array.from(latestByUser.values()));
+            } catch (e) {
+                setChatList([]);
+            }
+        };
+        loadChats();
+    }, [token, authUser?.id]);
 
     // Calculate position for new chat windows - LinkedIn style positioning
     const calculateChatWindowPosition = (isMinimized: boolean = false) => {
@@ -365,10 +433,141 @@ export const Chat: React.FC = () => {
         );
     };
 
-    const handleSendMessage = (message: string) => {
-        // This would typically send to backend
-        console.log('Sending message:', message);
+    const handleSendMessage = async (message: string) => {
+        const targetUserId = otherUserId ? Number(otherUserId) : activeChatId;
+        if (!token || !targetUserId) return;
+        try {
+            await sendMessage(token, Number(targetUserId), message);
+            // Refresh conversation after send
+            const msgs = await getConversation(token, Number(targetUserId));
+            setActiveConversation(msgs.map((m, idx) => ({
+                id: m.id || idx,
+                senderId: m.senderId,
+                text: m.message,
+                timestamp: m.createdAt,
+            })));
+        } catch (e) { /* ignore for now or set error */ }
     };
+
+    useEffect(() => {
+        const load = async () => {
+            if (!token || !otherUserId) return;
+            try {
+                setLoading(true);
+                setError('');
+                const msgs = await getConversation(token, Number(otherUserId));
+                setActiveConversation(msgs.map((m, idx) => ({
+                    id: m.id || idx,
+                    senderId: m.senderId,
+                    text: m.message,
+                    timestamp: m.createdAt,
+                })));
+            } catch (e: any) {
+                setError(e?.message || 'Failed to load conversation');
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, [token, otherUserId]);
+
+    useEffect(() => {
+        const loadForSelected = async () => {
+            if (!token || !activeChatId) return;
+            try {
+                setLoading(true);
+                setError('');
+                const msgs = await getConversation(token, Number(activeChatId));
+                setActiveConversation(msgs.map((m, idx) => ({
+                    id: m.id || idx,
+                    senderId: m.senderId,
+                    text: m.message,
+                    timestamp: m.createdAt,
+                })));
+            } catch (e: any) {
+                setError(e?.message || 'Failed to load conversation');
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadForSelected();
+    }, [token, activeChatId]);
+
+    // Lightweight polling to auto-refresh messages without reload
+    useEffect(() => {
+        const targetId = selectedUserId;
+        if (!token || !targetId) return;
+        const interval = setInterval(async () => {
+            try {
+                const msgs = await getConversation(token, Number(targetId));
+                setActiveConversation(msgs.map((m, idx) => ({
+                    id: m.id || idx,
+                    senderId: m.senderId,
+                    text: m.message,
+                    timestamp: m.createdAt,
+                })));
+            } catch {
+                // ignore transient polling errors
+            }
+        }, 3000);
+        return () => clearInterval(interval);
+    }, [token, selectedUserId]);
+
+    // Setup Socket.IO for incoming call notification
+    useEffect(() => {
+        const baseUrl = (import.meta as any)?.env?.VITE_API_URL || (window as any)?.API_BASE_URL || 'http://localhost:4000';
+        console.log('[socket] connecting to', baseUrl);
+        const s = io(baseUrl, {
+            transports: ['websocket', 'polling'],
+            path: '/socket.io',
+            withCredentials: false,
+        });
+        setSocket(s);
+        // Register this logged-in user with the server for targeted events
+        if (authUser?.id) {
+            console.log('[socket] emitting registerUser', { userId: String(authUser.id) });
+            s.emit('registerUser', { userId: String(authUser.id) });
+        }
+        s.on('incomingCall', (payload: any) => {
+            console.log('[socket] incomingCall received', payload);
+            if (payload?.from) {
+                setIncomingCall({ from: Number(payload.from), name: payload?.name });
+            }
+        });
+        s.on('connect', () => console.log('[socket] connected', s.id));
+        s.on('connect_error', (err: any) => console.error('[socket] connect_error', err?.message || err));
+        s.on('error', (err: any) => console.error('[socket] error', err));
+        s.on('callTerminated', () => {
+            console.log('[socket] callTerminated received');
+            setIncomingCall(null);
+        });
+        return () => {
+            console.log('[socket] disconnect');
+            s.disconnect();
+        };
+    }, [navigate, authUser?.id]);
+
+    useEffect(() => {
+        const loadProfile = async () => {
+            if (!token || !selectedUserId) {
+                setSelectedUserProfile(null);
+                return;
+            }
+            try {
+                const profile = await getUserById(token, Number(selectedUserId));
+                const normalized = {
+                    id: profile.id,
+                    name: profile.fullName || 'User',
+                    image: (profile as any)?.Pictures?.[0]?.url || (profile as any)?.pictures?.[0]?.url || 'https://picsum.photos/200',
+                    age: 0,
+                };
+                setSelectedUserProfile(normalized);
+            } catch (e) {
+                setSelectedUserProfile(null);
+            }
+        };
+        loadProfile();
+    }, [token, selectedUserId]);
 
     const handleAcceptInvitation = (invitationId: string) => {
         const invitation = randomInvitations.find(inv => inv.id === invitationId);
@@ -406,6 +605,42 @@ export const Chat: React.FC = () => {
     const handleStartRandomChat = () => {
         setRandomChatEnabled(true);
         setIsMainChatOpen(false);
+    };
+
+    const handleStartVoiceCall = (userId: number) => {
+        if (socket && authUser?.id) {
+            socket.emit('initiateCall', { targetId: String(userId), signalData: null, senderId: String(authUser.id), senderName: authUser.fullName || 'User' });
+        }
+        navigate(`/call/${userId}?type=voice`);
+    };
+
+    const handleStartVideoCall = (userId: number) => {
+        if (socket && authUser?.id) {
+            console.log('[socket] initiateCall emit', { targetId: String(userId) });
+            socket.emit('initiateCall', { targetId: String(userId), signalData: null, senderId: String(authUser.id), senderName: authUser.fullName || 'User' });
+        }
+        navigate(`/call/${userId}?type=video`);
+    };
+
+    const handleAcceptIncomingCall = () => {
+        if (!incomingCall) return;
+        // Optionally notify the caller that the call was accepted
+        if (socket && authUser?.id) {
+            console.log('[socket] answerCall emit', { to: String(incomingCall.from) });
+            socket.emit('answerCall', { to: String(incomingCall.from), mediaType: 'video', mediaStatus: true });
+        }
+        const callerId = incomingCall.from;
+        setIncomingCall(null);
+        navigate(`/call/${callerId}?type=video`);
+    };
+
+    const handleDeclineIncomingCall = () => {
+        if (!incomingCall) return;
+        if (socket) {
+            console.log('[socket] terminateCall emit', { targetId: String(incomingCall.from) });
+            socket.emit('terminateCall', { targetId: String(incomingCall.from) });
+        }
+        setIncomingCall(null);
     };
 
     return (
@@ -468,11 +703,28 @@ export const Chat: React.FC = () => {
                 {/* Right Side - Conversation */}
                 <div className="flex-1">
                     <ConversationView 
-                        chatRoom={activeChatRoom || null}
+                        chatRoom={activeChatRoom}
                         onSendMessage={handleSendMessage}
+                        currentUserId={Number(authUser?.id) || 0}
+                        onStartVoiceCall={handleStartVoiceCall}
+                        onStartVideoCall={handleStartVideoCall}
                     />
                 </div>
             </div>
+
+            {/* Incoming Call Modal */}
+            {incomingCall && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Incoming Call</h3>
+                        <p className="text-gray-600 dark:text-gray-300 mb-6">{incomingCall.name || 'Someone'} is calling you…</p>
+                        <div className="flex space-x-3">
+                            <button onClick={handleAcceptIncomingCall} className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">Accept</button>
+                            <button onClick={handleDeclineIncomingCall} className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">Decline</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Random Chat Invitation Modals */}
             {randomInvitations.map(invitation => (

@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { sampleUsers } from '../data/sampleData';
 import { User } from '../types';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
+import { getUserById } from '../api/users';
 import { PhoneOffIcon, MicOffIcon, VideoOffIcon, VolumeUpIcon, RefreshCcwIcon, VideoIcon } from '../constants';
 
 const CallActionButton: React.FC<{ onClick: () => void; children: React.ReactNode; className: string, text: string }> = ({ onClick, children, className, text }) => (
@@ -18,6 +20,7 @@ const CallPage: React.FC = () => {
     const { userId } = useParams<{ userId: string }>();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const token = useSelector((state: RootState) => state.auth.token);
     
     const [user, setUser] = useState<User | null>(null);
     const [callStatus, setCallStatus] = useState('Connecting...');
@@ -31,12 +34,28 @@ const CallPage: React.FC = () => {
 
     // Effect to get user and simulate call status
     useEffect(() => {
-        const foundUser = sampleUsers.find(u => u.id === parseInt(userId || ''));
-        if (foundUser) {
-            setUser(foundUser);
-        } else {
-            navigate('/'); // Redirect if user not found
-        }
+        const loadUser = async () => {
+            try {
+                if (token && userId) {
+                    const apiUser = await getUserById(token, Number(userId));
+                    const normalized: User = {
+                        id: apiUser.id,
+                        name: apiUser.fullName || 'User',
+                        age: 0,
+                        image: (apiUser as any)?.Pictures?.[0]?.url || (apiUser as any)?.pictures?.[0]?.url || 'https://picsum.photos/400',
+                        occupation: (apiUser as any)?.occupation,
+                        religion: (apiUser as any)?.religion,
+                        caste: (apiUser as any)?.caste,
+                        location: undefined,
+                        marriageGoals: undefined,
+                    };
+                    setUser(normalized);
+                }
+            } catch {
+                // Fallback gracefully; keep user null if not found
+            }
+        };
+        loadUser();
 
         const statusTimer1 = setTimeout(() => setCallStatus('Ringing...'), 2000);
         const statusTimer2 = setTimeout(() => setCallStatus('00:01'), 5000);
@@ -58,7 +77,7 @@ const CallPage: React.FC = () => {
             clearTimeout(statusTimer3);
             clearInterval(interval);
         };
-    }, [userId, navigate]);
+    }, [userId, navigate, token]);
 
     // Effect to get media devices
     useEffect(() => {

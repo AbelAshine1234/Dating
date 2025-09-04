@@ -1,11 +1,22 @@
 import React, { useContext, useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
-import { SunIcon, MoonIcon, UserIcon, CreditCardIcon } from '../constants';
+import { SunIcon, MoonIcon, UserIcon, CreditCardIcon, LogoutIcon } from '../constants';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../store';
+import { signOut } from '../store/authSlice';
 
 export const NavBar: React.FC = () => {
   const themeContext = useContext(ThemeContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const dispatch = useDispatch();
+
+  const handleLogout = () => {
+    dispatch(signOut());
+    navigate('/signin');
+  };
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `relative font-heading text-lg transition-colors duration-300 ${
@@ -15,15 +26,29 @@ export const NavBar: React.FC = () => {
     } after:content-[''] after:absolute after:w-full after:h-0.5 after:bottom-[-2px] after:left-0 after:bg-neon-magenta after:scale-x-0 after:origin-bottom-right after:transition-transform after:duration-300 ${
         isActive ? 'after:scale-x-100 after:origin-bottom-left' : 'group-hover:after:scale-x-100 group-hover:after:origin-bottom-left'
     }`;
+  const navButtonClass = `relative font-heading text-lg transition-colors duration-300 text-gray-600 dark:text-gray-300 hover:text-neon-purple dark:hover:text-neon-purple after:content-[''] after:absolute after:w-full after:h-0.5 after:bottom-[-2px] after:left-0 after:bg-neon-magenta after:scale-x-0 after:origin-bottom-right after:transition-transform after:duration-300 group-hover:after:scale-x-100 group-hover:after:origin-bottom-left`;
     
   const mainNavLinks = (
       <>
         <NavLink to="/" className={navLinkClass}>Home</NavLink>
-        <NavLink to="/dating" className={navLinkClass}>Dating</NavLink>
-        <NavLink to="/marriage" className={navLinkClass}>Marriage</NavLink>
-        <NavLink to="/chat" className={navLinkClass}>Chat</NavLink>
-        <NavLink to="/profile" className={navLinkClass}>Profile</NavLink>
+        {isAuthenticated ? (
+          <NavLink to="/dating" className={navLinkClass}>Dating</NavLink>
+        ) : (
+          <button onClick={() => navigate('/signin')} className={navButtonClass}>Dating</button>
+        )}
+        {isAuthenticated ? (
+          <NavLink to="/marriage" className={navLinkClass}>Marriage</NavLink>
+        ) : (
+          <button onClick={() => navigate('/signin')} className={navButtonClass}>Marriage</button>
+        )}
+        {isAuthenticated && <NavLink to="/chat" className={navLinkClass}>Chat</NavLink>}
+        {isAuthenticated && <NavLink to="/profile" className={navLinkClass}>Profile</NavLink>}
         <NavLink to="/subscription" className={navLinkClass}>Plans</NavLink>
+        {isAuthenticated ? (
+          <button onClick={handleLogout} className={navButtonClass}>Logout</button>
+        ) : (
+          <NavLink to="/signin" className={navLinkClass}>Sign In</NavLink>
+        )}
       </>
   );
   
@@ -67,12 +92,23 @@ export const NavBar: React.FC = () => {
         {isMenuOpen && (
             <div className="md:hidden pb-4 absolute top-20 left-0 right-0 bg-white dark:bg-dark-bg shadow-lg z-50 px-4">
                 <div className="flex flex-col items-center space-y-2 pt-4">
-                  <NavLink to="/profile" className={mobileMenuLinkClass} onClick={() => setIsMenuOpen(false)}>
-                    <UserIcon /> Profile
-                  </NavLink>
+                  {isAuthenticated ? (
+                    <NavLink to="/profile" className={mobileMenuLinkClass} onClick={() => setIsMenuOpen(false)}>
+                      <UserIcon /> Profile
+                    </NavLink>
+                  ) : null}
                   <NavLink to="/subscription" className={mobileMenuLinkClass} onClick={() => setIsMenuOpen(false)}>
                     <CreditCardIcon /> Subscription
                   </NavLink>
+                  {isAuthenticated ? (
+                    <button onClick={() => { setIsMenuOpen(false); handleLogout(); }} className={mobileMenuLinkClass}>
+                      <LogoutIcon /> Logout
+                    </button>
+                  ) : (
+                    <NavLink to="/signin" className={mobileMenuLinkClass} onClick={() => setIsMenuOpen(false)}>
+                      <LogoutIcon /> Sign In
+                    </NavLink>
+                  )}
                 </div>
             </div>
         )}

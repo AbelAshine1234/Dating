@@ -21,9 +21,14 @@ exports.getRecommendations = async (req, res) => {
     if (g === 'male') targetGender = 'female';
     else if (g === 'female') targetGender = 'male';
 
+    // Allow client to specify context explicitly (e.g., dating vs marriage) per tab
+    const requestedContext = (req.query?.lookingFor || req.body?.lookingFor || req.query?.context || '').toString().toLowerCase();
+    const lookingForLower = requestedContext === 'marriage' || requestedContext === 'dating'
+      ? requestedContext
+      : String(currentUser.lookingFor || '').toLowerCase();
     const baseFilter = {
       id: { [Op.ne]: currentUserId },
-      lookingFor: currentUser.lookingFor,
+      lookingFor: lookingForLower === 'marriage' ? 'marriage' : 'dating',
     };
     if (targetGender) baseFilter.gender = targetGender;
 

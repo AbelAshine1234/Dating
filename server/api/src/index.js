@@ -15,11 +15,13 @@ const userRoutes = require('./routes/userRoutes');
 const recommendationRoutes = require('./routes/recommendationRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const matchRoutes = require('./routes/matchRoutes');
+const callRoutes = require('./routes/callRoutes');
 
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/matches', matchRoutes);
+app.use('/api/calls', callRoutes);
 
 // Health check
 app.get('/', (req, res) => res.send('Dating API is running...'));
