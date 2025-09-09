@@ -1,0 +1,5 @@
+{
+  "name": "DateMatch",
+  "description": "A frontend clone of a popular matchmaking website, DateMatch helps users find connections for marriage or dating. It features separate registration flows, detailed profiles, search functionality, and a simulated premium experience, all built with React and Tailwind CSS without a backend.",
+  "requestFramePermissions": []
+}
